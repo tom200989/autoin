@@ -182,7 +182,7 @@ def check_phone_wifi(target_wifi="EF-office"):
         tmp_print(f"x 检测EF-office网络出错: {e}")
         return False
 
-def check_envs():
+def check_nets():
     """
     检查全部环境
     :return:
@@ -217,4 +217,4 @@ def check_envs():
     return final_state
 
 if __name__ == "__main__":
-    envs_state = check_envs()
+    envs_state = check_nets()

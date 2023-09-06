@@ -1,9 +1,8 @@
 import winapps
 
 # 判断chrome是否有安装
-target_exe = 'chrome'
+target_exe = 'google chrome'
 exe = [app.name for app in winapps.search_installed(target_exe)]
-print(exe)
 if exe and len(exe) > 0:
     for ex in winapps.list_installed():
         exe_name = str(ex.name).lower()
