@@ -11,7 +11,6 @@ def check_pc_wifi(target_wifi="EF-office"):
     wifi强度状态
     :return: 状态+错误信息
     """
-    tmp_print(mer_title("正在检查本机WiFi状态..."))
     try:
         cmd_output = subprocess.check_output(["netsh", "wlan", "show", "interfaces"], universal_newlines=True, encoding='gbk')
         wifi_info = re.findall(r"SSID\s+:\s+(.*?)\n", cmd_output)
@@ -27,7 +26,6 @@ def check_pc_wifi(target_wifi="EF-office"):
 
 # ---------------------------------------------- 后台环境状态 ----------------------------------------------
 def check_ecoflow_server():
-    tmp_print(mer_title("正在检查后台环境状态..."))
     urls = {  #
         "欧洲节点": "https://api-e.ecoflow.com/iot-service/health",  #
         "美国节点": "https://api-a.ecoflow.com/iot-service/health",  #
@@ -65,7 +63,6 @@ def check_ecoflow_server():
 
 # ---------------------------------------------- 外网状态 ----------------------------------------------
 def check_google():
-    tmp_print(mer_title("正在检查本机外网状态..."))
     urls = ["https://www.google.com"]
     for url in urls:
         try:
@@ -82,7 +79,6 @@ def check_google():
 
 # ---------------------------------------------- adb连接状态 ----------------------------------------------
 def __restart_adb__():
-    tmp_print(mer_title("正在重启ADB服务..."))
     try:
         subprocess.run(["adb", "kill-server"], universal_newlines=True, encoding='utf-8')
         subprocess.run(["adb", "start-server"], universal_newlines=True, encoding='utf-8')
@@ -93,7 +89,6 @@ def __restart_adb__():
         return False
 
 def __check_adb_install__():
-    tmp_print(mer_title("正在检查ADB安装状态..."))
     try:
         cmd_output = subprocess.check_output(["adb", "version"], universal_newlines=True, encoding='utf-8')
         if "Android Debug Bridge version" in cmd_output:
@@ -136,7 +131,6 @@ def check_adb(retry_count=1):
 
 # ---------------------------------------------- minio存储桶状态 ----------------------------------------------
 def check_minio():
-    tmp_print(mer_title("正在检查minio存储桶状态..."))
 
     endpoint = 'minio.ecoflow.com:9000'
     access_key = 'EQS4J84JGJCDYNENIMT1'
@@ -153,8 +147,8 @@ def check_minio():
         tmp_print(f"x minio连接出错: {e}")
         return False
 
+# ---------------------------------------------- 手机wifi状态 ----------------------------------------------
 def check_phone_wifi(target_wifi="EF-office"):
-    tmp_print(mer_title("正在检查手机WiFi状态..."))
     try:
         # 执行ADB命令并获取输出
         result = subprocess.check_output(['adb', 'shell', 'dumpsys netstats | grep -e \'iface=wlan0\'']).decode('utf-8')
@@ -182,7 +176,8 @@ def check_phone_wifi(target_wifi="EF-office"):
         tmp_print(f"x 检测EF-office网络出错: {e}")
         return False
 
-def check_nets():
+# ---------------------------------------------- 检查全部环境 ----------------------------------------------
+def check_all_nets():
     """
     检查全部环境
     :return:
@@ -201,7 +196,7 @@ def check_nets():
 
     tmp_print('')
     tmp_print('>' * 50)
-    tmp_print('环境检测结果如下: ')
+    tmp_print('网络环境检测结果如下: ')
     final_state = True
     for state_key, state_value in state_map.items():
         if not state_value[0]:
@@ -209,12 +204,11 @@ def check_nets():
             tmp_print(state_value[1])
 
     if final_state:
-        tmp_print('√ 所有测试环境通过!')
+        tmp_print('√ 测试网络环境通过!')
     else:
-        tmp_print('x 测试环境存在异常!')
+        tmp_print('x 测试网络环境异常!')
     tmp_print('>' * 50)
 
     return final_state
 
-if __name__ == "__main__":
-    envs_state = check_nets()
+pass

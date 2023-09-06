@@ -5,7 +5,8 @@ import socket
 import sys
 import time
 
-root_dir = 'D:/autocase'  # 根目录
+motherbox_version = 1000  # 母盒版本号
+root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 
 def get_today():

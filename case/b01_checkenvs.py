@@ -1,4 +1,5 @@
 import os
+import re
 import subprocess
 import winapps
 from ctmp_tools import *
@@ -15,8 +16,18 @@ def check_chrome():
             exe_name = str(ex.name).lower()
             if exe_name in target_exe or target_exe in exe_name:
                 # chrome名, 安装路径, 版本, 卸载命令
-                return True, [ex.name, ex.install_location, ex.version, ex.uninstall_string]
-    return False, None
+                chrome_name = ex.name
+                chrome_install_path = ex.install_location
+                chrome_version = ex.version
+                chrome_uninstall_string = ex.uninstall_string
+                return_info = [chrome_name, chrome_install_path, chrome_version, chrome_uninstall_string]
+                # 判断版本是否符合要求
+                is_match = bool(re.match(r'^(108|109|110|111|112|113|114)\.', chrome_version))
+                if is_match:
+                    return True, return_info, "chrome已安装"
+                else:
+                    return False, return_info, "chrome版本不符合要求(当前只支持108-114版本)"
+    return False, [], "未安装chrome"
 
 def check_chromedriver(chrome_install_path):
     """
@@ -27,8 +38,8 @@ def check_chromedriver(chrome_install_path):
     if chrome_install_path:
         chromedriver_path = os.path.join(chrome_install_path, 'chromedriver.exe')
         if os.path.exists(chromedriver_path):
-            return True, chromedriver_path
-    return False, None
+            return True, chromedriver_path, 'chromedriver已安装'
+    return False, None, '未安装chromedriver'
 
 def check_sdk():
     """
@@ -95,7 +106,7 @@ def check_appium():
         tmp_print(f'x 获取appium版本失败：{e}')
         return False
 
-def check_system_envpath():
+def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/Application'):
     """
     检查系统环境变量中是否配置的是压测的路径
     """
@@ -110,17 +121,11 @@ def check_system_envpath():
     test_jdk_home = os.path.join(root_dir, 'jdk')
     test_jdk_bin_path = os.path.join(test_jdk_home, 'bin')
     # chrome-application路径
-    test_chrome_home = 'C:/Program Files/Google/Chrome/Application'
+    test_chrome_home = chrome_install_path
 
     # 切割获取到的环境变量
     path_list = system_env_path.split(';')
-    test_paths = [
-        test_platforms_path,
-        test_platform_tools_path,
-        test_ndk_path,
-        test_jdk_bin_path,
-        test_chrome_home
-    ]
+    test_paths = [test_platforms_path, test_platform_tools_path, test_ndk_path, test_jdk_bin_path, test_chrome_home]
 
     # 检查环境变量中是否包含压测的路径
     if all(test_path in path_list for test_path in test_paths):
@@ -128,11 +133,49 @@ def check_system_envpath():
         indices = [path_list.index(test_path) for test_path in test_paths]
         if all(index < len(test_paths) for index in indices):
             tmp_print('√ 压测编译环境变量配置正确')
-            return True
+            return True,'压测编译环境变量配置正确'
         else:
             tmp_print('x 压测编译环境变量配置异常(未处于优先位置)')
-            return False
+            return False,'压测编译环境变量配置异常(未处于优先位置)'
     else:
         tmp_print('x 压测编译环境变量不全')
-        return False
+        return False,'压测编译环境变量不全'
 
+# ---------------------------------------------- 检测全部环境 ----------------------------------------------
+def check_all_sys():
+    """
+    检查全部环境
+    :return:
+    """
+    chrome_state, chrome_infos, chrome_tip = check_chrome()
+    chrome_install_path = chrome_infos[1]
+    chromedriver_state, chromedriver_path, chromedriver_tip = check_chromedriver(chrome_install_path)
+    envs_state, envs_tip = check_system_envpath(chrome_install_path)
+
+    state_map = {  #
+        'state_chrome': [chrome_state, f'tips: {chrome_tip}!'],  # chrome安装检测
+        'state_chromedriver': [chromedriver_state, f'tips: {chromedriver_tip}!'],  # chromedriver安装检测
+        'state_sdk': [check_sdk(), 'tips: 指定SDK环境变量未配置!'],  # SDK环境变量检测
+        'state_jdk': [check_jdk(), 'tips: 指定JDK环境变量未配置!'],  # JDK环境变量检测
+        'state_nodejs': [check_nodejs(), 'tips: nodejs环境未配置!'],  # nodejs环境变量检测
+        'state_appium': [check_appium(), 'tips: appium环境未配置!'],  # appium环境变量检测
+        'state_envs': [envs_state, f'tips: {envs_tip}!'],  # 系统环境变量检测
+    }
+
+    tmp_print('')
+    tmp_print('>' * 50)
+    tmp_print('系统环境检测结果如下: ')
+    final_state = True
+    for state_key, state_value in state_map.items():
+        if not state_value[0]:
+            final_state = False
+            tmp_print(state_value[1])
+
+    if final_state:
+        tmp_print('√ 所有系统环境测试通过!')
+    else:
+        tmp_print('x 系统环境测试异常!')
+    tmp_print('>' * 50)
+
+
+check_all_sys()
