@@ -178,4 +178,4 @@ def check_all_sys():
     tmp_print('>' * 50)
 
 
-check_all_sys()
+# check_all_sys()

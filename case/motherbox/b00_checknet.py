@@ -1,8 +1,7 @@
 import subprocess
 import requests
 import re
-from minio import Minio
-from minio.error import S3Error
+from cminio_tools import *
 from ctmp_tools import *
 
 # ---------------------------------------------- wifi强度状态 ----------------------------------------------
@@ -131,21 +130,14 @@ def check_adb(retry_count=1):
 
 # ---------------------------------------------- minio存储桶状态 ----------------------------------------------
 def check_minio():
+    # 检查minio连接
+    minio_state, minio_tip = check_minio_connect()
+    if minio_state:
+        tmp_print(f"√ minio连接成功:{minio_tip}")
+    else:
+        tmp_print(f"x minio连接出错: {minio_tip}")
 
-    endpoint = 'minio.ecoflow.com:9000'
-    access_key = 'EQS4J84JGJCDYNENIMT1'
-    secret_key = '8Vgk11c9bDOpZPTJMexPLrxZpzEOqro+jZyAUh+a'
-
-    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True)
-    try:
-        # 检查是否可以列出存储桶
-        buckets = client.list_buckets()
-        for bucket in buckets:
-            tmp_print("√ minio连接成功:", bucket.name)
-        return True
-    except S3Error as e:
-        tmp_print(f"x minio连接出错: {e}")
-        return False
+    return minio_state
 
 # ---------------------------------------------- 手机wifi状态 ----------------------------------------------
 def check_phone_wifi(target_wifi="EF-office"):
