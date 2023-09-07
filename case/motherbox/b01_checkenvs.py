@@ -50,6 +50,15 @@ def check_sdk():
     sdk_path = os.path.join(root_dir, 'sdk')
     return os.path.exists(sdk_path)
 
+def check_ndk():
+    """
+    获取NDK的安装信息
+    :return:
+    """
+    # 拼接NDK路径
+    ndk_path = os.path.join(root_dir, 'sdk', 'ndk')
+    return os.path.exists(ndk_path)
+
 def check_jdk():
     """
     获取JDK的安装信息
@@ -133,13 +142,13 @@ def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/App
         indices = [path_list.index(test_path) for test_path in test_paths]
         if all(index < len(test_paths) for index in indices):
             tmp_print('√ 压测编译环境变量配置正确')
-            return True,'压测编译环境变量配置正确'
+            return True, '压测编译环境变量配置正确'
         else:
             tmp_print('x 压测编译环境变量配置异常(未处于优先位置)')
-            return False,'压测编译环境变量配置异常(未处于优先位置)'
+            return False, '压测编译环境变量配置异常(未处于优先位置)'
     else:
         tmp_print('x 压测编译环境变量不全')
-        return False,'压测编译环境变量不全'
+        return False, '压测编译环境变量不全'
 
 # ---------------------------------------------- 检测全部环境 ----------------------------------------------
 def check_all_sys():
@@ -157,6 +166,7 @@ def check_all_sys():
         'state_chromedriver': [chromedriver_state, f'tips: {chromedriver_tip}!'],  # chromedriver安装检测
         'state_sdk': [check_sdk(), 'tips: 指定SDK环境变量未配置!'],  # SDK环境变量检测
         'state_jdk': [check_jdk(), 'tips: 指定JDK环境变量未配置!'],  # JDK环境变量检测
+        'state_ndk': [check_ndk(), 'tips: 指定NDK环境变量未配置!'],  # NDK环境变量检测
         'state_nodejs': [check_nodejs(), 'tips: nodejs环境未配置!'],  # nodejs环境变量检测
         'state_appium': [check_appium(), 'tips: appium环境未配置!'],  # appium环境变量检测
         'state_envs': [envs_state, f'tips: {envs_tip}!'],  # 系统环境变量检测
@@ -174,8 +184,7 @@ def check_all_sys():
     if final_state:
         tmp_print('√ 所有系统环境测试通过!')
     else:
-        tmp_print('x 系统环境测试异常!')
+        tmp_print('x 系统环境测试不通过!')
     tmp_print('>' * 50)
-
 
 # check_all_sys()

@@ -131,7 +131,7 @@ def check_adb(retry_count=1):
 # ---------------------------------------------- minio存储桶状态 ----------------------------------------------
 def check_minio():
     # 检查minio连接
-    minio_state, minio_tip = check_minio_connect()
+    minio_state, minio_tip,_ = check_minio_connect()
     if minio_state:
         tmp_print(f"√ minio连接成功:{minio_tip}")
     else:

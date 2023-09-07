@@ -5,9 +5,19 @@ import socket
 import sys
 import time
 
-motherbox_version = 1000  # 母盒版本号
+current_mversion = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
+
+# minio配置信息
+endpoint = 'minio.ecoflow.com:9000'
+access_key = 'EQS4J84JGJCDYNENIMT1'
+secret_key = '8Vgk11c9bDOpZPTJMexPLrxZpzEOqro+jZyAUh+a'
+bucket_name = 'rnd-app-and-device-logs'
+minio_config = 'minio_config.json'
+
+# minio路径信息
+minio_motherbox_root = 'autocase/android/motherbox' # motherbox的根目录
 
 def get_today():
     """
@@ -38,29 +48,6 @@ def out(content):
         file.write(final + "\n")
         file.flush()
 
-# 使用ord()函数判断
-def custom_len(s):
-    length = 0
-    for char in s:
-        if ord(char) < 128:
-            length += 1
-        else:
-            length += 2
-    return length
-
-# 拼接标题
-def mer_title(content):
-    """
-    拼接标题
-    :param content: 标题内容
-    :return: 拼接后的标题
-    """
-    total_len = 60
-    content_len = custom_len(content)
-    left_len = (total_len - content_len) // 2
-    right_len = total_len - content_len - left_len
-    return f"{'-' * left_len}{content}{'-' * right_len}"
-
 # 临时控制台打印 (不写入文件)
 def tmp_print(*args):
     """
@@ -70,6 +57,7 @@ def tmp_print(*args):
 
     # types: 1 --> 表示 打印进度
     # types: 2 --> 表示 普通打印加入换行符
+    # types: 3 --> 表示 不打印单记录在本地
     types = 0
     # 对于输入参数的第一个特殊处理
     if args and args[0] == '<tmpg>':
@@ -77,6 +65,9 @@ def tmp_print(*args):
         args = args[1:]
     elif args and args[0] == '<enter>':
         types = 2
+        args = args[1:]
+    elif args and args[0] == '<noprint>':
+        types = 3
         args = args[1:]
 
     # 对于剩余的参数或所有的参数
@@ -99,6 +90,8 @@ def tmp_print(*args):
     elif types == 2:  # 强制换行 <enter>
         print(f"\n{pre_align}\t--> {times} ===> {content}")
         out(content)
+    elif types == 3:  # 不打印但记录在本地
+        out(content)
     else:  # 普通打印
         print(f"{pre_align}\t--> {times} ===> {content}")
         out(content)
@@ -114,18 +107,4 @@ def get_nowexe_dir():
         src_dir = os.path.dirname(os.path.abspath(__file__))  # 当前工程目录
     return src_dir
 
-# 获取电脑名称(如huilinxu01-nb.efsz.com)
-def get_computer_name():
-    try:
-        computer_name = socket.getfqdn()
-        return computer_name
-    except Exception as e:
-        tmp_print('获取设备全名出错: ', e)
-        return None
-
-# 获取电脑环境变量
-def get_computer_env():
-    env_str = str(os.getenv('path'))
-    envs = list(env_str.split(';'))
-    print(envs)
 
