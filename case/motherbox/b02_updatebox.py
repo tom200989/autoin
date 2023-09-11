@@ -26,3 +26,4 @@ def check_box_version():
     else:
         tmp_print(f"当前版本: {current_mversion}, 无最新版本")
         return False
+
