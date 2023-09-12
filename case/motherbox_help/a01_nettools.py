@@ -1,8 +1,8 @@
 import subprocess
 import requests
 import re
-from cminio_tools import *
-from ctmp_tools import *
+from a02_miniotools import *
+from zboxtools import *
 
 # ---------------------------------------------- wifi强度状态 ----------------------------------------------
 def check_pc_wifi(target_wifi="EF-office"):
@@ -100,34 +100,6 @@ def __check_adb_install__():
         tmp_print(f"x 检查ADB安装时出错: {e}")
         return False
 
-def check_adb(retry_count=1):
-    # adb是否安装
-    if not __check_adb_install__():
-        return False
-
-    try:
-        cmd_output = subprocess.check_output(["adb", "devices"], universal_newlines=True, encoding='utf-8')
-        devices = re.findall(r"\n(.*?)\tdevice", cmd_output)
-        if len(devices) > 1:
-            tmp_print("x 只能连接一台手机进行测试, 请断开多余的连接")
-            return False
-
-        if devices:
-            tmp_print(f"√ 已连接的设备: {', '.join(devices)}")
-            return True
-        else:
-            tmp_print("x 没有android设备连接!")
-            return False
-    except Exception as e:
-        if retry_count > 0:
-            tmp_print("x 检查ADB连接时出错，正在尝试重启ADB服务")
-            if __restart_adb__():
-                # 递归1次
-                check_adb(retry_count=retry_count - 1)
-        # 大于1或者再次进入except都认为失败
-        tmp_print(f"x 重试失败，检查ADB连接时出错: {e}")
-        return False
-
 # ---------------------------------------------- minio存储桶状态 ----------------------------------------------
 def check_minio():
     # 检查minio连接
@@ -169,10 +141,9 @@ def check_phone_wifi(target_wifi="EF-office"):
         return False
 
 # ---------------------------------------------- 检查全部环境 ----------------------------------------------
-def check_all_nets(is_adb=True):
+def check_all_nets():
     """
-    检查全部环境
-    @param is_adb: 是否检查adb连接(默认检查)
+    检查全部环境(不检查adb)
     """
     target_wifi = "EF-office"
     state_map = {  #
@@ -180,20 +151,13 @@ def check_all_nets(is_adb=True):
         'state_ecoflow': [check_ecoflow_server(), 'tips: 当前连接后台服务器异常!(可能会导致APP压测数据不准)'],  # 后台连接检测
         'state_google': [check_google(), 'tips: 当前访问外网异常!(可能会导致APP无法配网)'],  # 外网连接检测
         'state_minio': [check_minio(), 'tips: 当前访问minio存储桶异常!(可能会导致无法查看压测数据)'],  # minio存储桶
-        'state_adb': [check_adb(), 'tips: 当前连接手机异常!(可能会导致全链路压测无法进行)']  # adb检测
     }
-    if state_map['state_adb'][0]:
-        # 手机wifi连接
-        state_map['state_phone_wifi'] = [check_phone_wifi(target_wifi), f'tips: 请把本机连接到{target_wifi}!(可能会导致APP无法登录)']
 
     tmp_print('')
     tmp_print('>' * 50)
     tmp_print('网络环境检测结果如下: ')
     final_state = True
     for state_key, state_value in state_map.items():
-        # 如果不检查adb连接, 则跳过
-        if state_key == 'state_adb' and not is_adb:
-            continue
         if not state_value[0]:
             final_state = False
             tmp_print(state_value[1])

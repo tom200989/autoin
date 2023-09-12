@@ -2,13 +2,12 @@ import datetime
 import inspect
 import os
 import socket
+import stat
 import sys
 import time
-from prompt_toolkit import PromptSession
-from prompt_toolkit.shortcuts import checkboxlist_dialog
-from prompt_toolkit.shortcuts import radiolist_dialog
 
-current_mversion = 1000  # 当前母盒版本号
+import psutil
+
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 
@@ -19,8 +18,8 @@ secret_key = '8Vgk11c9bDOpZPTJMexPLrxZpzEOqro+jZyAUh+a'
 bucket_name = 'rnd-app-and-device-logs'
 minio_config = 'minio_config.json'
 
-# minio路径信息
 minio_motherbox_root = 'autocase/android/motherbox'  # motherbox的根目录
+
 
 def get_today():
     """
@@ -110,16 +109,31 @@ def get_nowexe_dir():
         src_dir = os.path.dirname(os.path.abspath(__file__))  # 当前工程目录
     return src_dir
 
-def choice_pancel(title, text, items, fun_cancel):
+def del_rw(action, name, exc):
     """
-    选择面板选项
+    切换文件夹权限(管理员)
+    :param action:
+    :param name:
+    :param exc:
     """
-    # selects = checkboxlist_dialog(title=title, text=text, values=items).run()
-    selects = radiolist_dialog(title=title, text=text, values=items).run()
-    if not selects:  # 如果没有选择任何选项
-        if fun_cancel:  # 且回调函数不为空
-            fun_cancel()  # 执行回调函数
-        else:  # 回调函数为空(外部也不告知如何处理)
-            tmp_print("x 未选择任何选项")  # 则默认打印
-        return None
-    return selects[0]
+    os.chmod(name, stat.S_IWRITE)
+    try:
+        # 先解除占用
+        # unoccupied(name)
+        # 再删除文件夹
+        os.remove(name)
+    except Exception as error:
+        # traceback.print_exc()
+        tmp_print('文件夹被进程占用, os.remove失败, 即将强制删除: ', error)
+        os.popen(f'rd /s /q {name}')  # 如果当前文件夹被占用, 则强制删除
+
+def find_exe_path(exe_name):
+    """
+    根据进程名查找进程路径(绝对路径)
+    :param exe_name:  进程名
+    :return:  进程路径
+    """
+    for proc in psutil.process_iter(attrs=['pid', 'name', 'exe']):
+        if proc.info['name'] and exe_name.lower() in proc.info['name'].lower():
+            return proc.info['exe']
+

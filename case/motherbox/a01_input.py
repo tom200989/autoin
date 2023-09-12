@@ -1,5 +1,6 @@
 from b00_checknet import *
 from b01_checkenvs import *
+from a02_updatebox import *
 
 choice_patch = ['选择操作类型', '请选择:', [('0', '运行脚本'), ('1', '下载脚本')]]
 choice_debug = ['选择调试功能', '请选择:', [('0', '检测网络'), ('1', '检测环境'), ('2', '安装环境'), ('3', '还原环境'), ('4', '更新母盒')]]
@@ -35,5 +36,4 @@ def select_debug(fun_cancel):
         # todo 2023/9/7 还原环境
         print('还原环境')
     elif debug_selected == '4':
-        # todo 2023/9/7 更新母盒
-        print('更新母盒')
+        update_box()
