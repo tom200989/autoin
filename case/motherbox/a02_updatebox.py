@@ -1,3 +1,4 @@
+import shutil
 import subprocess
 
 from b00_checknet import *
@@ -31,23 +32,43 @@ def check_box_version():
         return False
 
 def update_box():
-    # # 检查网络是否畅通
-    # is_network = check_all_nets(is_adb=False)
-    # if is_network:
-    #     # 如果有新版本, 则更新
-    #     need_update = check_box_version()
-    #     if need_update:
-    #         # 下载母盒辅助器
-    #         # todo 2023/9/11
-    #         # 启动母盒辅助器 (D:\project\python\autoin\case\motherbox\build\exe.win-amd64-3.11\mbh\a00_boxhelper.exe)
-    #         boxhelp_path = os.path.join(motherbox_exedir, 'mbh', 'a00_boxhelper.exe')
-    #         boxhelp_exe = subprocess.Popen([boxhelp_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
-    #         tmp_print("启动母盒辅助器进程ID:", boxhelp_exe.pid)
-    #     else:
-    #         tmp_print("当前没有最新母盒版本, 无需更新")
-    #     return need_update
-    #
-    # else:
-    #     tmp_print("网络异常, 请根据以上提示检查网络相关连接!")
-    #     return False
-    pass
+    # 检查网络是否畅通
+    is_network = check_all_nets(is_adb=False)
+    if is_network:
+        # 如果有新版本, 则更新
+        need_update = check_box_version()
+        if need_update:
+            # 清空母盒辅助器目录 `.xxx/build`
+            tmp_print('正在清空母盒辅助器目录...')
+            mbh_build = os.path.join(boxhelper_dir, 'build')
+            if os.path.exists(mbh_build): shutil.rmtree(mbh_build, onerror=del_rw)
+            # 下载母盒辅助器(.xxx/boxhelper/boxhelper.zip)
+            tmp_print('正在下载母盒辅助器...')
+            local_zip = os.path.join(boxhelper_dir, 'boxhelper.zip')
+            is_downed = download_obj(local_zip, minio_boxhelper_root + "/boxhelper.zip")
+            if not is_downed:
+                tmp_print(f"x 下载母盒辅助器失败")
+                input("请检查网络连接, 然后按任意键重试...")
+                update_box()
+            else:
+                tmp_print(f'正在解压母盒辅助器...')
+                shutil.unpack_archive(str(local_zip), boxhelper_dir)
+                # 删除压缩包
+                tmp_print(f'正在删除压缩包...')
+                os.remove(str(local_zip))
+                # 启动母盒辅助器
+                tmp_print(f'正在启动新母盒辅助器...')
+                exe_abs_path = os.path.join(boxhelper_dir, 'build', 'exe.win-arm64-3.11', 'a00_boxhelper.exe')
+                newbox_exe = subprocess.Popen([exe_abs_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
+                tmp_print("当前母盒辅助器进程ID:", newbox_exe.pid)
+                # 退出母盒辅助器
+                tmp_print(f'正在退出母盒...')
+                exit(0)
+                sys.exit(0)
+        else:
+            tmp_print("当前没有最新母盒版本, 无需更新")
+        return need_update
+
+    else:
+        tmp_print("网络异常, 请根据以上提示检查网络相关连接!")
+        return False

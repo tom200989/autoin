@@ -1,6 +1,6 @@
 from a01_input import *
 
-choice_box = ['选择操作类型', '请选择:', [('0', '退出测试'), ('1', '执行脚本'), ('2', '调试工具')]]
+choice_box = [f'自动化测试(V{current_mversion})', '请选择:', [('0', '退出测试'), ('1', '执行脚本'), ('2', '调试工具')]]
 
 def main():
     box_seleted = choice_pancel(choice_box[0], choice_box[1], choice_box[2], fun_cancel=main)

@@ -41,11 +41,18 @@ def download_obj(local_path, obj_name):
     :param obj_name:  object名称
     """
     try:
+        # 创建目录
+        local_dir = os.path.dirname(local_path)
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
         client = Minio(endpoint, access_key=access_key, secret_key=secret_key, )
         client.fget_object(bucket_name, obj_name, local_path)
         tmp_print(f"正在下载 {bucket_name} 到 {local_path}")
+        return True
     except Exception as err:
         tmp_print(f'下载文件[{obj_name}]失败, {err}')
+        return False
 
 def get_motherbox_version(obj_prefix):
     """

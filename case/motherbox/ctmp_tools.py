@@ -2,6 +2,7 @@ import datetime
 import inspect
 import os
 import socket
+import stat
 import sys
 import time
 from prompt_toolkit import PromptSession
@@ -11,6 +12,7 @@ from prompt_toolkit.shortcuts import radiolist_dialog
 current_mversion = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
+boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
 
 # minio配置信息
 endpoint = 'minio.ecoflow.com:9000'
@@ -19,8 +21,28 @@ secret_key = '8Vgk11c9bDOpZPTJMexPLrxZpzEOqro+jZyAUh+a'
 bucket_name = 'rnd-app-and-device-logs'
 minio_config = 'minio_config.json'
 
-# minio路径信息
-minio_motherbox_root = 'autocase/android/motherbox'  # motherbox的根目录
+# 母盒minio路径
+minio_motherbox_root = 'autocase/android/motherbox/'  # motherbox的根目录 (注意, 要加一个`/`结尾,可能会有重复的前缀目录, 也会被搜索出来)
+# 母盒辅助器路径
+minio_boxhelper_root = 'autocase/android/boxhelper/'  # boxhelper的根目录 (注意, 要加一个`/`结尾,可能会有重复的前缀目录, 也会被搜索出来)
+
+def del_rw(action, name, exc):
+    """
+    切换文件夹权限(管理员)
+    :param action:
+    :param name:
+    :param exc:
+    """
+    os.chmod(name, stat.S_IWRITE)
+    try:
+        # 先解除占用
+        # unoccupied(name)
+        # 再删除文件夹
+        os.remove(name)
+    except Exception as error:
+        # traceback.print_exc()
+        tmp_print('文件夹被进程占用, os.remove失败, 即将强制删除: ', error)
+        os.popen(f'rd /s /q {name}')  # 如果当前文件夹被占用, 则强制删除
 
 def get_today():
     """

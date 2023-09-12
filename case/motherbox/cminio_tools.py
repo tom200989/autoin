@@ -17,6 +17,26 @@ def check_minio_connect():
         tmp_print('<noprint>', f'连接失败, {e}')
         return False, str(e), None
 
+def download_obj(local_path, obj_name):
+    """
+    从minio下载文件
+    :param local_path:  本地路径
+    :param obj_name:  object名称
+    """
+    try:
+        # 创建目录
+        local_dir = os.path.dirname(local_path)
+        if not os.path.exists(local_dir):
+            os.makedirs(local_dir)
+
+        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, )
+        client.fget_object(bucket_name, obj_name, local_path)
+        tmp_print(f"正在下载 {bucket_name} 到 {local_path}")
+        return True
+    except Exception as err:
+        tmp_print(f'下载文件[{obj_name}]失败, {err}')
+        return False
+
 def list_minio_objs(obj_prefix):
     """
     从minio中获取指定前缀的object列表
@@ -44,7 +64,7 @@ def get_motherbox_version(obj_prefix):
     obj_names = list_minio_objs(obj_prefix)
     if obj_names is None: return None
     for objn in obj_names:
-        versions.append(str(objn).split('/')[-2])
+        versions.append(int(str(objn).split('/')[-2]))
     new_version = max(versions)
     tmp_print('<noprint>', f'最新版本: {new_version}')
     return int(new_version)

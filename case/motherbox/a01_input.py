@@ -25,15 +25,15 @@ def select_debug(fun_cancel):
     """
     # 脚本选择面板
     debug_selected = choice_pancel(choice_debug[0], choice_debug[1], choice_debug[2], fun_cancel=fun_cancel)
-    if debug_selected == '0':
+    if debug_selected == '0':# 检查网络
         check_all_nets()
-    elif debug_selected == '1':
+    elif debug_selected == '1':# 检查环境
         check_all_sys()
-    elif debug_selected == '2':
+    elif debug_selected == '2': # 安装环境
         # todo 2023/9/7 安装环境
         print('安装环境')
-    elif debug_selected == '3':
+    elif debug_selected == '3': # 还原环境
         # todo 2023/9/7 还原环境
         print('还原环境')
-    elif debug_selected == '4':
+    elif debug_selected == '4': # 更新母盒
         update_box()

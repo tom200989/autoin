@@ -8,6 +8,7 @@ import time
 
 import psutil
 
+boxhelper_version = 1  # 母盒辅助器版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 
@@ -19,7 +20,6 @@ bucket_name = 'rnd-app-and-device-logs'
 minio_config = 'minio_config.json'
 
 minio_motherbox_root = 'autocase/android/motherbox'  # motherbox的根目录
-
 
 def get_today():
     """
@@ -136,4 +136,3 @@ def find_exe_path(exe_name):
     for proc in psutil.process_iter(attrs=['pid', 'name', 'exe']):
         if proc.info['name'] and exe_name.lower() in proc.info['name'].lower():
             return proc.info['exe']
-
