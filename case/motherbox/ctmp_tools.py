@@ -9,7 +9,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
 
-current_mversion = 1000  # 当前母盒版本号
+current_mversion = 1001  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
