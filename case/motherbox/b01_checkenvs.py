@@ -22,11 +22,11 @@ def check_chrome():
                 chrome_uninstall_string = ex.uninstall_string
                 return_info = [chrome_name, chrome_install_path, chrome_version, chrome_uninstall_string]
                 # 判断版本是否符合要求
-                is_match = bool(re.match(r'^(108|109|110|111|112|113|114)\.', chrome_version))
+                is_match = bool(re.match(r'^(108|109|110|111|112|113|114|115|116)\.', chrome_version))
                 if is_match:
                     return True, return_info, "chrome已安装"
                 else:
-                    return False, return_info, "chrome版本不符合要求(当前只支持108-114版本)"
+                    return False, return_info, "chrome版本不符合要求(当前只支持108-116版本)"
     return False, [], "未安装chrome"
 
 def check_chromedriver(chrome_install_path):
@@ -115,6 +115,34 @@ def check_appium():
         tmp_print(f'x 获取appium版本失败：{e}')
         return False
 
+def check_driver(drivers=None):
+    """
+    检查驱动是否安装
+    :param drivers:
+    :return:
+    """
+    if not drivers: drivers = ['CH341SER_A64', 'CH343SER_A64', 'silabser']
+    command = ['cmd', '/c', 'driverquery']
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    if stderr:
+        tmp_print(stderr.decode('gbk'))
+        return False, '驱动检查失败,请重试'
+    else:
+        result = stdout.decode('gbk')
+        # 开始切割
+        lines = result.split('\n')
+        all_modules = [line.split(' ', 1)[0] for line in lines if line]
+        # 查询哪些驱动没有安装
+        diff = set(drivers) - set(all_modules)
+        if diff and len(diff) > 0:
+            tmp_print(f'x 以下驱动没有安装: {diff}')
+            return False, f'当前驱动{list(diff)}未安装'
+        else:
+            tmp_print('驱动检查通过')
+            return True, '驱动检查通过'
+
 def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/Application'):
     """
     检查系统环境变量中是否配置的是压测的路径
@@ -160,6 +188,7 @@ def check_all_sys():
     chrome_install_path = chrome_infos[1]
     chromedriver_state, chromedriver_path, chromedriver_tip = check_chromedriver(chrome_install_path)
     envs_state, envs_tip = check_system_envpath(chrome_install_path)
+    driver_state, driver_tip = check_driver()
 
     state_map = {  #
         'state_chrome': [chrome_state, f'tips: {chrome_tip}!'],  # chrome安装检测
@@ -169,6 +198,7 @@ def check_all_sys():
         'state_ndk': [check_ndk(), 'tips: 指定NDK环境变量未配置!'],  # NDK环境变量检测
         'state_nodejs': [check_nodejs(), 'tips: nodejs环境未配置!'],  # nodejs环境变量检测
         'state_appium': [check_appium(), 'tips: appium环境未配置!'],  # appium环境变量检测
+        'state_driver': [driver_state, f'tips: {driver_tip}!'],  # appium环境变量检测
         'state_envs': [envs_state, f'tips: {envs_tip}!'],  # 系统环境变量检测
     }
 
