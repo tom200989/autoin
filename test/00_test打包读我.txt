@@ -1,0 +1,12 @@
+使用 `0000_批量打包box.py` 对母盒进行打包需要遵守几个步骤:
+1-修改完你的业务逻辑
+2-在minio上查看最近的一个母盒的版本号,如1000; 查看本地 `zboxtools.py` 的 `boxhelper_version`,如1
+3-修改 `ctmp_tools.py` 里的 `motherbox_version` 为1001
+4-修改 `zboxtools.py` 里的 `boxhelper_version` 为2
+5-此时先在 `0000_批量打包box.py` 文件的末尾, 执行 `pack()` 和 `zip_upload()`
+      目的是先把新版本发布到minio上
+6-然后把 `ctmp_tools.py` 里的 `motherbox_version` 改回1000
+7-然后把 `zboxtools.py` 里的 `boxhelper_version` 改回1
+8-此时 `0000_批量打包box.py` 只执行 `pack()`
+9-此时启动motherbox/build/exe.win-amd64-3.11/a00_motherbox.exe, 选择 `调试工具` - `更新母盒` 的功能
+来查看是否能够正确更新母盒
