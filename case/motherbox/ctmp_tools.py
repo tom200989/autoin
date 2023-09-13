@@ -10,7 +10,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
 
-motherbox_version = 1001  # 当前母盒版本号
+motherbox_version = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
@@ -152,6 +152,7 @@ def get_pack_dirname():
     获取打包后的目录名(exe.win-amd64-3.11)
     """
     platform_name = platform.system().lower()
+    if 'win' in platform_name: platform_name = 'win'
     architecture = platform.machine().lower()
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     directory_name = f"exe.{platform_name}-{architecture}-{python_version}"
