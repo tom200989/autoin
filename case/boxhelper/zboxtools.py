@@ -19,7 +19,7 @@ secret_key = '8Vgk11c9bDOpZPTJMexPLrxZpzEOqro+jZyAUh+a'
 bucket_name = 'rnd-app-and-device-logs'
 minio_config = 'minio_config.json'
 
-minio_motherbox_root = 'autocase/android/motherbox'  # motherbox的根目录
+minio_motherbox_root = 'autocase/android/motherbox/'  # motherbox的根目录
 
 def get_today():
     """

@@ -6,6 +6,8 @@ import time
 
 from minio import Minio
 from minio.error import S3Error
+from case.motherbox.ctmp_tools import motherbox_version
+from case.boxhelper.zboxtools import boxhelper_version
 
 endpoint = 'minio.ecoflow.com:9000'
 access_key = 'EQS4J84JGJCDYNENIMT1'
@@ -28,9 +30,9 @@ def __upload_minio(*args):
     try:
         client = Minio(endpoint, access_key=access_key, secret_key=secret_key, )
         result = client.fput_object(bucket_name=bucket_name, object_name=minio_motherbox_x, file_path=motherbox_zip, num_parallel_uploads=1)
-        print(f"正在上传{result.object_name}")
+        print(f"正在上传{result.object_name}, (版本: {motherbox_version})")
         result2 = client.fput_object(bucket_name=bucket_name, object_name=minio_boxhelper_x, file_path=boxhelper_zip, num_parallel_uploads=1)
-        print(f"正在上传{result2.object_name}")
+        print(f"正在上传{result2.object_name}, (版本: {boxhelper_version})")
         time.sleep(1)
         print('上传完成')
     except Exception as err:
@@ -38,7 +40,7 @@ def __upload_minio(*args):
 
 def __need_version():
     """
-    压缩包版本号
+    自动从minio获取版本号并自增+1
     :return:
     """
     client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True)
@@ -109,30 +111,32 @@ def zip_upload():
     压缩并上传
     :return:
     """
-    # 获取motherbox的minio当前版本
-    zip_version = __need_version()
+    # 方案1: 获取motherbox的minio当前版本
+    # zip_version = __need_version()
+    # 方案2: 获取当前母盒版本
+    zip_version = motherbox_version
     # 压缩motherbox
-    print('正在压缩motherbox')
+    print(f'正在压缩:motherbox -> 版本: {motherbox_version}')
     motherbox_build = os.path.join(project_paths['motherbox.exe'], 'build')
     motherbox_zip = os.path.join(project_paths['motherbox.exe'], f'motherbox_{zip_version}.zip')
-    motherbox_without_ext,_ = os.path.splitext(motherbox_zip) # 去掉后缀
+    motherbox_without_ext, _ = os.path.splitext(motherbox_zip)  # 去掉后缀
     shutil.make_archive(motherbox_without_ext, 'zip', motherbox_build)
     # 压缩boxhelper
-    print('正在压缩boxhelper')
+    print(f'正在压缩: boxhelper -> 版本: {boxhelper_version}')
     boxhelper_build = os.path.join(project_paths['boxhelper.exe'], 'build')
     boxhelper_zip = os.path.join(project_paths['boxhelper.exe'], f'boxhelper.zip')
-    boxhelper_without_ext,_ = os.path.splitext(boxhelper_zip) # 去掉后缀
+    boxhelper_without_ext, _ = os.path.splitext(boxhelper_zip)  # 去掉后缀
     shutil.make_archive(boxhelper_without_ext, 'zip', boxhelper_build)
     # 返回需要上传到minio的参数
     minio_motherbox_x = minio_motherbox_root + f'{zip_version}/motherbox_{zip_version}.zip'
-    minio_boxhelper_x = minio_boxhelper_root + f'boxhelper.zip'
+    minio_boxhelper_x = minio_boxhelper_root + 'boxhelper.zip'
     need_upload = minio_motherbox_x, motherbox_zip, minio_boxhelper_x, boxhelper_zip
     # 上传到minio
     __upload_minio(*need_upload)
     # 删除压缩包
-    print(f'正在删除压缩包:{str(motherbox_zip)}')
+    print(f'正在删除压缩包:{str(motherbox_zip)}, (版本: {motherbox_version})')
     os.remove(motherbox_zip)
-    print(f'正在删除压缩包:{str(boxhelper_zip)}')
+    print(f'正在删除压缩包:{str(boxhelper_zip)}, (版本: {boxhelper_version})')
     os.remove(boxhelper_zip)
 
 """ ----------------------------------------------- pack ----------------------------------------------- """
@@ -140,4 +144,4 @@ def zip_upload():
 # 执行打包
 pack()
 # 执行压缩并上传
-zip_upload()
+# zip_upload()

@@ -24,11 +24,11 @@ def check_box_version():
         return False
 
     # 判断版本大小
-    if current_mversion < lastest_mversion:
-        tmp_print(f"当前版本: {current_mversion}, 最新版本: {lastest_mversion}")
+    if motherbox_version < lastest_mversion:
+        tmp_print(f"当前版本: {motherbox_version}, 最新版本: {lastest_mversion}")
         return True
     else:
-        tmp_print(f"当前版本: {current_mversion}, 无最新版本")
+        tmp_print(f"当前版本: {motherbox_version}, 无最新版本")
         return False
 
 def update_box():
@@ -45,7 +45,7 @@ def update_box():
             # 下载母盒辅助器(.xxx/boxhelper/boxhelper.zip)
             tmp_print('正在下载母盒辅助器...')
             local_zip = os.path.join(boxhelper_dir, 'boxhelper.zip')
-            is_downed = download_obj(local_zip, minio_boxhelper_root + "/boxhelper.zip")
+            is_downed = download_obj(local_zip, minio_boxhelper_root + "boxhelper.zip")
             if not is_downed:
                 tmp_print(f"x 下载母盒辅助器失败")
                 input("请检查网络连接, 然后按任意键重试...")

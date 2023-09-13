@@ -1,6 +1,7 @@
 import sys
 sys.path.append(r'D:\project\python\autoin\venv\Lib\site-packages')  # 这句话一定要加(路径是安装cz_freeze时的python路径)
 from cx_Freeze import setup, Executable
+from ctmp_tools import motherbox_version
 
 # 可执行文件的信息
 executables = [Executable(r"D:\project\python\autoin\case\motherbox\a00_motherbox.py")]
@@ -9,7 +10,7 @@ build_options = {  #
     "packages": [  #
         'shutil', 'psutil',  # a02_updatebox.py
         'subprocess', 'requests', 're',  # b00_checknet.py
-        'winapps',  # b01_checkenvs.py
+        'winapps', 'plumbum', # b01_checkenvs.py
         'minio',  # cminio_tools.py
         'datetime', 'inspect', 'os', 'socket', 'stat', 'sys', 'time','prompt_toolkit'  # ctmp_tools.py
     ],  # 全部需要导入的包
@@ -23,7 +24,7 @@ build_options = {  #
 # 创建setup
 setup(  #
     name="motherbox",  #
-    version="1.0",  #
+    version=f"{motherbox_version}",  #
     description="Description of Your Script",  #
     options={"build_exe": build_options},  #
     executables=executables  #

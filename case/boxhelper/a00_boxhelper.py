@@ -31,7 +31,7 @@ def main():
         # 查询minio的母盒包(此处无需再检查是否有新版本,只要进入到这里,就说明有新版本)
         new_version = get_motherbox_version(minio_motherbox_root)
         # 拼接minio的母盒包最新版本路径
-        motherbox_newpath = f'{minio_motherbox_root}/{new_version}/motherbox_{new_version}.zip'
+        motherbox_newpath = f'{minio_motherbox_root}{new_version}/motherbox_{new_version}.zip'
         # 结束当前母盒进程并删除当前母盒的所在目录(build)
         motherbox_exe = 'a00_motherbox.exe'
         # 结束母盒进程
