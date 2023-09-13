@@ -8,7 +8,7 @@ executables = [Executable(r"D:\project\python\autoin\case\motherbox\a00_motherbo
 build_options = {  #
     "packages": [  #
         'shutil', 'psutil',  # a02_updatebox.py
-        'subprocess', 'request', 're',  # b00_checknet.py
+        'subprocess', 'requests', 're',  # b00_checknet.py
         'winapps',  # b01_checkenvs.py
         'minio',  # cminio_tools.py
         'datetime', 'inspect', 'os', 'socket', 'stat', 'sys', 'time','prompt_toolkit'  # ctmp_tools.py

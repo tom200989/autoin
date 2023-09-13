@@ -115,15 +115,17 @@ def zip_upload():
     print('正在压缩motherbox')
     motherbox_build = os.path.join(project_paths['motherbox.exe'], 'build')
     motherbox_zip = os.path.join(project_paths['motherbox.exe'], f'motherbox_{zip_version}.zip')
-    shutil.make_archive(motherbox_zip, 'zip', motherbox_build)
+    motherbox_without_ext,_ = os.path.splitext(motherbox_zip) # 去掉后缀
+    shutil.make_archive(motherbox_without_ext, 'zip', motherbox_build)
     # 压缩boxhelper
     print('正在压缩boxhelper')
     boxhelper_build = os.path.join(project_paths['boxhelper.exe'], 'build')
     boxhelper_zip = os.path.join(project_paths['boxhelper.exe'], f'boxhelper.zip')
-    shutil.make_archive(boxhelper_zip, 'zip', boxhelper_build)
+    boxhelper_without_ext,_ = os.path.splitext(boxhelper_zip) # 去掉后缀
+    shutil.make_archive(boxhelper_without_ext, 'zip', boxhelper_build)
     # 返回需要上传到minio的参数
-    minio_motherbox_x = minio_motherbox_root + f'/{zip_version}/motherbox_{zip_version}.zip'
-    minio_boxhelper_x = minio_boxhelper_root + f'/boxhelper.zip'
+    minio_motherbox_x = minio_motherbox_root + f'{zip_version}/motherbox_{zip_version}.zip'
+    minio_boxhelper_x = minio_boxhelper_root + f'boxhelper.zip'
     need_upload = minio_motherbox_x, motherbox_zip, minio_boxhelper_x, boxhelper_zip
     # 上传到minio
     __upload_minio(*need_upload)

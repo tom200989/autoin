@@ -8,7 +8,7 @@ executables = [Executable(r"D:\project\python\autoin\case\boxhelper\a00_boxhelpe
 build_options = {  #
     "packages": [  #
         'shutil', 'psutil',  # a00_boxhelper.py
-        'subprocess', 'request', 're',  # a01_nettools.py
+        'subprocess', 'requests', 're',  # a01_nettools.py
         'minio',  # a02_miniotools.py
         'datetime', 'inspect', 'os', 'socket', 'stat', 'sys', 'time'  # zboxtools.py
     ],  # 全部需要导入的包
