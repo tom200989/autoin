@@ -62,10 +62,6 @@ def update_box():
                 tmp_print('启动路径: ', exe_abs_path)
                 newbox_exe = subprocess.Popen([exe_abs_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
                 tmp_print("当前母盒辅助器进程ID:", newbox_exe.pid)
-                # 退出母盒辅助器
-                tmp_print(f'正在退出母盒...')
-                exit(0)
-                sys.exit(0)
         else:
             tmp_print("当前没有最新母盒版本, 无需更新")
         return need_update

@@ -8,7 +8,7 @@ import time
 
 import psutil
 
-boxhelper_version = 1  # 母盒辅助器版本号
+boxhelper_version = 2  # 母盒辅助器版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 

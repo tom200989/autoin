@@ -41,13 +41,22 @@ def main():
         # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-amd64-3.11\a00_motherbox.exe'
         if exe_abs_path:
             amd64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11 目录
+            tmp_print('box_amd64_dir: ', amd64_dir)
             build_dir = os.path.dirname(str(amd64_dir))  # build 目录
+            tmp_print('box_build_dir: ', build_dir)
             build_in_who = os.path.dirname(str(build_dir))  # 用户目录 (build所在的目录)
+            tmp_print('box_build_in_who: ', build_in_who)
+            # 此时再退出母盒
+            tmp_print(f'正在退出当前母盒...')
+            kill_exe(motherbox_exe)
+            # 删除当前母盒
             tmp_print(f'正在删除当前母盒...')
             if os.path.exists(build_dir): shutil.rmtree(build_dir, onerror=del_rw)
             # 下载最新母盒包(下载到用户目录, 因为打包上传时直接压缩build文件夹)
             # .xxx/build/exe.win-amd64-3.11/motherbox_1002.zip
             local_zip = os.path.join(build_in_who, f'motherbox_{new_version}.zip')
+            tmp_print('从 ', motherbox_newpath, ' 下载')
+            tmp_print('下载到: ', local_zip)
             is_downed = download_obj(local_zip, motherbox_newpath)
             if not is_downed:
                 tmp_print(f'下载最新母盒包失败, 请检查网络连接!')
