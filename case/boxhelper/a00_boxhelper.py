@@ -38,15 +38,15 @@ def main():
         kill_exe(motherbox_exe)
         # 删除母盒进程所在的build文件夹
         exe_abs_path = str(find_exe_path(motherbox_exe))  # a00_motherbox.exe所在的绝对路径
-        # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-arm64-3.11\a00_motherbox.exe'
+        # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-amd64-3.11\a00_motherbox.exe'
         if exe_abs_path:
-            arm64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11 目录
-            build_dir = os.path.dirname(str(arm64_dir))  # build 目录
+            amd64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11 目录
+            build_dir = os.path.dirname(str(amd64_dir))  # build 目录
             build_in_who = os.path.dirname(str(build_dir))  # 用户目录 (build所在的目录)
             tmp_print(f'正在删除当前母盒...')
             if os.path.exists(build_dir): shutil.rmtree(build_dir, onerror=del_rw)
             # 下载最新母盒包(下载到用户目录, 因为打包上传时直接压缩build文件夹)
-            # .xxx/build/exe.win-arm64-3.11/motherbox_1002.zip
+            # .xxx/build/exe.win-amd64-3.11/motherbox_1002.zip
             local_zip = os.path.join(build_in_who, f'motherbox_{new_version}.zip')
             is_downed = download_obj(local_zip, motherbox_newpath)
             if not is_downed:
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     # os.remove(r'C:\Users\huilin.xu\Desktop\d\motherbox_1002.zip')
 
     # 删除
-    # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-arm64-3.11\a00_motherbox.exe'
+    # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-amd64-3.11\a00_motherbox.exe'
     # arm64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11
     # build_dir = os.path.dirname(str(arm64_dir))  # build
     # tmp_print(f'正在删除当前母盒...')

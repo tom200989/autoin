@@ -58,7 +58,8 @@ def update_box():
                 os.remove(str(local_zip))
                 # 启动母盒辅助器
                 tmp_print(f'正在启动新母盒辅助器...')
-                exe_abs_path = os.path.join(boxhelper_dir, 'build', 'exe.win-arm64-3.11', 'a00_boxhelper.exe')
+                exe_abs_path = os.path.join(boxhelper_dir, 'build', get_pack_dirname(), 'a00_boxhelper.exe')
+                tmp_print('启动路径: ', exe_abs_path)
                 newbox_exe = subprocess.Popen([exe_abs_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
                 tmp_print("当前母盒辅助器进程ID:", newbox_exe.pid)
                 # 退出母盒辅助器

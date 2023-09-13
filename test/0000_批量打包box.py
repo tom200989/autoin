@@ -3,6 +3,7 @@ import stat
 import subprocess
 import os
 import time
+import tempfile
 
 from minio import Minio
 from minio.error import S3Error
@@ -114,21 +115,34 @@ def zip_upload():
     # 方案1: 获取motherbox的minio当前版本
     # zip_version = __need_version()
     # 方案2: 获取当前母盒版本
-    zip_version = motherbox_version
     # 压缩motherbox
     print(f'正在压缩:motherbox -> 版本: {motherbox_version}')
-    motherbox_build = os.path.join(project_paths['motherbox.exe'], 'build')
-    motherbox_zip = os.path.join(project_paths['motherbox.exe'], f'motherbox_{zip_version}.zip')
+    # 先创建一个临时目录
+    temp_dir = tempfile.mkdtemp()
+    # 拷贝build到临时目录
+    shutil.copytree(os.path.join(project_paths['motherbox.exe'], 'build'), os.path.join(temp_dir, 'build'))
+    # 压缩包路径(打包的父目录下)
+    motherbox_zip = os.path.join(project_paths['motherbox.exe'], f'motherbox_{motherbox_version}.zip')
     motherbox_without_ext, _ = os.path.splitext(motherbox_zip)  # 去掉后缀
-    shutil.make_archive(motherbox_without_ext, 'zip', motherbox_build)
+    shutil.make_archive(motherbox_without_ext, 'zip', temp_dir)
+    # 清空并删除临时目录
+    shutil.rmtree(temp_dir, onerror=del_rw)
+
     # 压缩boxhelper
     print(f'正在压缩: boxhelper -> 版本: {boxhelper_version}')
-    boxhelper_build = os.path.join(project_paths['boxhelper.exe'], 'build')
+    # 先创建一个临时目录
+    temp_dir = tempfile.mkdtemp()
+    # 拷贝build到临时目录
+    shutil.copytree(os.path.join(project_paths['boxhelper.exe'], 'build'), os.path.join(temp_dir, 'build'))
+    # 压缩包路径(打包的父目录下)
     boxhelper_zip = os.path.join(project_paths['boxhelper.exe'], f'boxhelper.zip')
     boxhelper_without_ext, _ = os.path.splitext(boxhelper_zip)  # 去掉后缀
-    shutil.make_archive(boxhelper_without_ext, 'zip', boxhelper_build)
+    shutil.make_archive(boxhelper_without_ext, 'zip', temp_dir)
+    # 清空并删除临时目录
+    shutil.rmtree(temp_dir, onerror=del_rw)
+
     # 返回需要上传到minio的参数
-    minio_motherbox_x = minio_motherbox_root + f'{zip_version}/motherbox_{zip_version}.zip'
+    minio_motherbox_x = minio_motherbox_root + f'{motherbox_version}/motherbox_{motherbox_version}.zip'
     minio_boxhelper_x = minio_boxhelper_root + 'boxhelper.zip'
     need_upload = minio_motherbox_x, motherbox_zip, minio_boxhelper_x, boxhelper_zip
     # 上传到minio
@@ -145,3 +159,4 @@ def zip_upload():
 pack()
 # 执行压缩并上传
 # zip_upload()
+

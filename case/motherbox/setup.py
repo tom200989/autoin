@@ -11,7 +11,7 @@ build_options = {  #
         'shutil', 'psutil',  # a02_updatebox.py
         'subprocess', 'requests', 're',  # b00_checknet.py
         'winapps', 'plumbum', # b01_checkenvs.py
-        'minio',  # cminio_tools.py
+        'minio','platform',  # cminio_tools.py
         'datetime', 'inspect', 'os', 'socket', 'stat', 'sys', 'time','prompt_toolkit'  # ctmp_tools.py
     ],  # 全部需要导入的包
 
