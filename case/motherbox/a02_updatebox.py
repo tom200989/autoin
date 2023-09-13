@@ -53,6 +53,7 @@ def update_box():
             else:
                 tmp_print(f'正在解压母盒辅助器...')
                 shutil.unpack_archive(str(local_zip), boxhelper_dir)
+                time.sleep(2)
                 # 删除压缩包
                 tmp_print(f'正在删除压缩包...')
                 os.remove(str(local_zip))
