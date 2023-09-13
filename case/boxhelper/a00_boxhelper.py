@@ -24,6 +24,7 @@ def kill_exe(_exe):
 
 def main():
     print('当前辅助器版本号: V', boxhelper_version)
+    motherbox_exe = 'a00_motherbox.exe'
     # 检查网络
     is_network = check_all_nets()
     # 如果网络正常
@@ -32,23 +33,17 @@ def main():
         new_version = get_motherbox_version(minio_motherbox_root)
         # 拼接minio的母盒包最新版本路径
         motherbox_newpath = f'{minio_motherbox_root}{new_version}/motherbox_{new_version}.zip'
-        # 结束当前母盒进程并删除当前母盒的所在目录(build)
-        motherbox_exe = 'a00_motherbox.exe'
-        # 结束母盒进程
-        kill_exe(motherbox_exe)
-        # 删除母盒进程所在的build文件夹
+        # 找到母盒进程所在的build文件夹
         exe_abs_path = str(find_exe_path(motherbox_exe))  # a00_motherbox.exe所在的绝对路径
         # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-amd64-3.11\a00_motherbox.exe'
         if exe_abs_path:
             amd64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11 目录
-            tmp_print('box_amd64_dir: ', amd64_dir)
             build_dir = os.path.dirname(str(amd64_dir))  # build 目录
-            tmp_print('box_build_dir: ', build_dir)
             build_in_who = os.path.dirname(str(build_dir))  # 用户目录 (build所在的目录)
-            tmp_print('box_build_in_who: ', build_in_who)
-            # 此时再退出母盒
+            # 找到路径后再退出母盒
             tmp_print(f'正在退出当前母盒...')
             kill_exe(motherbox_exe)
+            time.sleep(1)
             # 删除当前母盒
             tmp_print(f'正在删除当前母盒...')
             if os.path.exists(build_dir): shutil.rmtree(build_dir, onerror=del_rw)
@@ -75,15 +70,17 @@ def main():
                 tmp_print("当前母盒进程ID:", newbox_exe.pid)
                 # 退出母盒辅助器
                 tmp_print(f'正在退出母盒辅助器...')
-                exit(0)
+                os._exit(0)
                 sys.exit(0)
 
         else:
             tmp_print(f'未找到{motherbox_exe}所在目录!')
+            kill_exe(motherbox_exe)
             input('请勿手动删除母盒!')
             main()
     else:
         tmp_print("网络异常, 请根据以上提示检查网络相关连接!")
+        kill_exe(motherbox_exe)
         input('请确保网络连接正常, 并按任意键再尝试')
         main()
 

@@ -158,5 +158,5 @@ def zip_upload():
 # 执行打包
 pack()
 # 执行压缩并上传
-zip_upload()
+# zip_upload()
 
