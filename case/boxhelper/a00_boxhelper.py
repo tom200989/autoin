@@ -36,7 +36,7 @@ def main():
     time.sleep(2)
     if exe_abs_path:
         # 检查网络
-        is_network = check_all_nets()
+        is_network = check_pingnet()
         # 如果网络正常
         if is_network:
             # 查询minio的母盒包(此处无需再检查是否有新版本,只要进入到这里,就说明有新版本)

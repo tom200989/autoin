@@ -33,7 +33,7 @@ def check_box_version():
 
 def update_box():
     # 检查网络是否畅通
-    is_network = check_all_nets(is_adb=False)
+    is_network = check_pingnet()
     if is_network:
         # 如果有新版本, 则更新
         need_update = check_box_version()

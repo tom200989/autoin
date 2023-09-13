@@ -1,6 +1,7 @@
 import datetime
 import inspect
 import os
+import shutil
 import socket
 import stat
 import sys
@@ -8,7 +9,7 @@ import time
 
 import psutil
 
-boxhelper_version = 1  # 母盒辅助器版本号
+boxhelper_version = 2  # 母盒辅助器版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 
@@ -116,11 +117,10 @@ def del_rw(action, name, exc):
     :param name:
     :param exc:
     """
+    # 修改权限
     os.chmod(name, stat.S_IWRITE)
     try:
-        # 先解除占用
-        # unoccupied(name)
-        # 再删除文件夹
+        # 删除文件夹
         os.remove(name)
     except Exception as error:
         # traceback.print_exc()

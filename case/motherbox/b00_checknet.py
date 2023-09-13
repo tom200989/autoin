@@ -206,4 +206,33 @@ def check_all_nets(is_adb=True):
 
     return final_state
 
+def check_pingnet():
+    """
+    仅检测网络连通性
+    :return:
+    """
+    target_wifi = "EF-office"
+    state_map = {  #
+        'state_pc_wifi': [check_pc_wifi(target_wifi), f'tips: 请把本机连接到{target_wifi}!(可能会导致无法运行脚本)'],  # 本机wifi连接
+        'state_google': [check_google(), 'tips: 当前访问外网异常!(可能会导致APP无法配网)'],  # 外网连接检测
+        'state_minio': [check_minio(), 'tips: 当前访问minio存储桶异常!(可能会导致无法查看压测数据)'],  # minio存储桶
+    }
+
+    tmp_print('')
+    tmp_print('>' * 50)
+    tmp_print('网络环境检测结果如下: ')
+    final_state = True
+    for state_key, state_value in state_map.items():
+        if not state_value[0]:
+            final_state = False
+            tmp_print(state_value[1])
+
+    if final_state:
+        tmp_print('√ 测试网络环境通过!')
+    else:
+        tmp_print('x 测试网络环境异常!')
+    tmp_print('>' * 50)
+
+    return final_state
+
 pass
