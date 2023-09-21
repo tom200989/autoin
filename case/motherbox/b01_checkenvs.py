@@ -4,6 +4,14 @@ import subprocess
 import winapps
 from ctmp_tools import *
 
+CHROME_LOW_VERSION = -1 # chrome版本过低
+CHROME_HIGH_VERSION = -2 # chrome版本过高
+CHROME_NOT_INSTALL = -3 # 未安装chrome
+CHROME_HAD_INSTALL = 1 # 已安装chrome
+
+lowest_version = 108  # 最低支持的chrome版本
+highest_version = 119  # 最高支持的chrome版本
+
 def check_chrome():
     """
     获取chrome的安装信息
@@ -21,22 +29,23 @@ def check_chrome():
                 chrome_version = ex.version
                 chrome_uninstall_string = ex.uninstall_string
                 return_info = [chrome_name, chrome_install_path, chrome_version, chrome_uninstall_string]
-                # 判断版本是否符合要求
-                is_match = bool(re.match(r'^(108|109|110|111|112|113|114|115|116)\.', chrome_version))
-                if is_match:
-                    return True, return_info, "chrome已安装"
+                # 查看chrome版本是否小于108
+                if int(chrome_version.split('.')[0]) < lowest_version:
+                    return False, return_info, f"chrome版本过低(当前只支持{lowest_version}-{highest_version}版本)", CHROME_LOW_VERSION
+                elif int(chrome_version.split('.')[0]) > 119:
+                    return False, return_info, f"chrome版本过高(当前只支持{lowest_version}-{highest_version}版本)", CHROME_HIGH_VERSION
                 else:
-                    return False, return_info, "chrome版本不符合要求(当前只支持108-116版本)"
-    return False, [], "未安装chrome"
+                    return True, return_info, "chrome已安装", CHROME_HAD_INSTALL
+    return False, [], "未安装chrome", CHROME_NOT_INSTALL
 
-def check_chromedriver(chrome_install_path):
+def check_chromedriver(chrome_install_dir):
     """
     查看chrome的安装目录下是否有chromedriver.exe
-    :param chrome_install_path:  chrome的安装目录
+    :param chrome_install_dir:  chrome的安装目录
     :return:  chromedriver.exe的路径
     """
-    if chrome_install_path:
-        chromedriver_path = os.path.join(chrome_install_path, 'chromedriver.exe')
+    if chrome_install_dir:
+        chromedriver_path = os.path.join(chrome_install_dir, 'chromedriver.exe')
         if os.path.exists(chromedriver_path):
             return True, chromedriver_path, 'chromedriver已安装'
     return False, None, '未安装chromedriver'
@@ -184,7 +193,7 @@ def check_all_sys():
     检查全部环境
     :return:
     """
-    chrome_state, chrome_infos, chrome_tip = check_chrome()
+    chrome_state, chrome_infos, chrome_tip, _ = check_chrome()
     chrome_install_path = chrome_infos[1]
     chromedriver_state, chromedriver_path, chromedriver_tip = check_chromedriver(chrome_install_path)
     envs_state, envs_tip = check_system_envpath(chrome_install_path)
@@ -203,7 +212,7 @@ def check_all_sys():
     }
 
     tmp_print('')
-    tmp_print('>' * 50)
+    tmp_print('>' * 80)
     tmp_print('系统环境检测结果如下: ')
     final_state = True
     for state_key, state_value in state_map.items():
@@ -215,6 +224,6 @@ def check_all_sys():
         tmp_print('√ 所有系统环境测试通过!')
     else:
         tmp_print('x 系统环境测试不通过!')
-    tmp_print('>' * 50)
+    tmp_print('>' * 80)
 
 # check_all_sys()

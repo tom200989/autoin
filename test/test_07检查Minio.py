@@ -16,7 +16,7 @@ def check_minio_connection(endpoint, access_key, secret_key):
         for bucket in buckets:
             print(bucket.name)
         return True
-    except S3Error as e:
+    except Exception as e:
         print(f"连接MinIO时出错: {e}")
         return False
 

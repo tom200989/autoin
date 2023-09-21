@@ -4,6 +4,7 @@ import os
 import platform
 import socket
 import stat
+import subprocess
 import sys
 import time
 
@@ -11,11 +12,14 @@ import psutil
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
+from concurrent.futures import ProcessPoolExecutor, TimeoutError
 
 motherbox_version = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
+chromesetup_dir = root_dir + '/chromesetup'  # ChromeSetup.zip目录
+boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 
 # minio配置信息
 endpoint = 'minio.ecoflow.com:9000'
@@ -28,6 +32,30 @@ minio_config = 'minio_config.json'
 minio_motherbox_root = 'autocase/android/motherbox/'  # motherbox的根目录 (注意, 要加一个`/`结尾,可能会有重复的前缀目录, 也会被搜索出来)
 # 母盒辅助器路径
 minio_boxhelper_root = 'autocase/android/boxhelper/'  # boxhelper的根目录 (注意, 要加一个`/`结尾,可能会有重复的前缀目录, 也会被搜索出来)
+
+# ChromeSetup.zip路径
+minio_chrome_zip = 'autocase/android/env/chromes/chrome/ChromeSetup.zip'  # chrome.exe的路径
+# chromedriver目录路径
+minio_chromedriver_root = 'autocase/android/env/chromes/chromedriver/'  # chromedriver目录路径(需遍历)
+
+def kill_exe(_exe):
+    """
+    关闭指定进程
+    java.exe: sonar.bat进程
+    pgAdmin4.exe: 数据库进程
+    """
+    tmp_print(f'正在关闭{_exe}....')
+    for proc in psutil.process_iter(['pid', 'name']):
+        # 检查进程名
+        if proc.info['name'] == _exe:
+            tmp_print(f'找到进程{_exe},正在关闭...')
+            # 杀掉进程
+            try:
+                proc.kill()
+            except Exception as error:
+                if 'NoSuchProcess' in str(error): tmp_print('该进程已关闭')
+
+    tmp_print(f'{_exe}已全部关闭!')
 
 def del_rw(action, name, exc):
     """
@@ -158,3 +186,23 @@ def get_pack_dirname():
     python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     directory_name = f"exe.{platform_name}-{architecture}-{python_version}"
     return directory_name
+
+def is_process_running(process_name):
+    """
+    检查进程是否运行
+    :param process_name: 进程名
+    :return: True 运行中, False 未运行
+    """
+    try:
+        # 遍历所有运行中的进程
+        for proc in psutil.process_iter():
+            # 获取进程详情作为字典
+            process_info = proc.as_dict(attrs=['pid', 'name', 'create_time'])
+            # 检查进程名是否与目标进程名相匹配
+            if process_name.lower() in process_info['name'].lower():
+                return True
+        return False
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        tmp_print('chrome安装失败, 程序被终止')
+        return False
+

@@ -1,3 +1,4 @@
+import urllib3
 from minio import Minio
 from minio.error import S3Error
 from zboxtools import *
@@ -7,14 +8,22 @@ def check_minio_connect():
     检查minio连接
     :return:
     """
-    tmp_print('<noprint>', '正在检查minio连接...')
-    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True)
+    tmp_print('正在检查minio连接...')
+    client = Minio(endpoint,  #
+                   access_key=access_key,  #
+                   secret_key=secret_key,  #
+                   secure=True,  #
+                   http_client=urllib3.PoolManager(timeout=2)  #
+                   )
     try:
         buckets = client.list_buckets()
-        tmp_print('<noprint>', f'minio连接成功, bucket名: {str(buckets[0])}')
+        tmp_print(f'minio连接成功, bucket名: {str(buckets[0])}')
         return True, str(buckets[0]), client
-    except S3Error as e:
-        tmp_print('<noprint>', f'连接失败, {e}')
+    except Exception as e:
+        if 'timed out' in str(e):
+            tmp_print(f'连接超时, {e}')
+        else:
+            tmp_print(f'连接失败, {e}')
         return False, str(e), None
 
 def list_minio_objs(obj_prefix):
@@ -31,7 +40,7 @@ def list_minio_objs(obj_prefix):
             obj_names.append(obj.object_name)
         return obj_names
     except Exception as e:
-        tmp_print('<noprint>', f'minio获取列表[{obj_prefix}]失败, {e}')
+        tmp_print(f'minio获取列表[{obj_prefix}]失败, {e}')
         return None
 
 def download_obj(local_path, obj_name):
@@ -66,7 +75,7 @@ def get_motherbox_version(obj_prefix):
     for objn in obj_names:
         versions.append(str(objn).split('/')[-2])
     new_version = max(versions)
-    tmp_print('<noprint>', f'最新版本: {new_version}')
+    tmp_print(f'最新版本: {new_version}')
     return int(new_version)
 
 # get_motherbox_version('autocase/android/motherbox/')

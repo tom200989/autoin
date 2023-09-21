@@ -25,10 +25,16 @@ def check_pc_wifi(target_wifi="EF-office"):
 
 # ---------------------------------------------- 外网状态 ----------------------------------------------
 def check_google():
+    # 检查atrust是否打开
+    is_atrust = is_process_running('aTrustTray.exe')
+    if not is_atrust:
+        tmp_print("x [google]aTrustTray未打开, 请手动打开aTrustTray并确保其处于登录状态!")
+        return False
+
     urls = ["https://www.google.com"]
     for url in urls:
         try:
-            response = requests.get(url)
+            response = requests.get(url, timeout=30)
             if response.status_code == 200:
                 tmp_print(f"√ 本机连接外网正常")
                 return True
@@ -36,11 +42,19 @@ def check_google():
                 tmp_print(f"x {url} 本机连接异常({response.status_code})")
                 return False
         except Exception as e:
-            tmp_print(f"x {url} 本机连接失败: {e}")
+            if 'timed out' in str(e):
+                tmp_print(f"x {url} 本机连接超时")
+            else:
+                tmp_print(f"x {url} 本机连接失败: {e}")
             return False
 
 # ---------------------------------------------- minio存储桶状态 ----------------------------------------------
 def check_minio():
+    # 检查atrust是否打开
+    is_atrust = is_process_running('aTrustTray.exe')
+    if not is_atrust:
+        tmp_print("x [minio]aTrustTray未打开, 请手动打开aTrustTray并确保其处于登录状态!")
+        return False
     # 检查minio连接
     minio_state, minio_tip, _ = check_minio_connect()
     if minio_state:
@@ -61,11 +75,11 @@ def check_pingnet():
     state_map = {  #
         'state_pc_wifi': [check_pc_wifi(target_wifi), f'tips: 请把本机连接到{target_wifi}!(可能会导致无法运行脚本)'],  # 本机wifi连接
         'state_google': [check_google(), 'tips: 当前访问外网异常!(可能会导致APP无法配网)'],  # 外网连接检测
-        'state_minio': [check_minio(), 'tips: 当前访问minio存储桶异常!(可能会导致无法查看压测数据)'],  # minio存储桶
+        'state_minio': [check_minio(), 'tips: 当前访问minio存储桶异常!(可能会导致无法查看压测数据,请检查atrust是否已经开启并已登录)'],  # minio存储桶
     }
 
     tmp_print('')
-    tmp_print('>' * 50)
+    tmp_print('>' * 80)
     tmp_print('网络环境检测结果如下: ')
     final_state = True
     for state_key, state_value in state_map.items():
@@ -77,7 +91,7 @@ def check_pingnet():
         tmp_print('√ 测试网络环境通过!')
     else:
         tmp_print('x 测试网络环境异常!')
-    tmp_print('>' * 50)
+    tmp_print('>' * 80)
 
     return final_state
 

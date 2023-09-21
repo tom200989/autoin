@@ -12,6 +12,7 @@ import psutil
 boxhelper_version = 1  # 母盒辅助器版本号
 root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
+motherbox_exe_p = 'a00_motherbox.exe' # 母盒进程名
 
 # minio配置信息
 endpoint = 'minio.ecoflow.com:9000'
@@ -21,6 +22,25 @@ bucket_name = 'rnd-app-and-device-logs'
 minio_config = 'minio_config.json'
 
 minio_motherbox_root = 'autocase/android/motherbox/'  # motherbox的根目录
+
+def kill_exe(_exe):
+    """
+    关闭指定进程
+    java.exe: sonar.bat进程
+    pgAdmin4.exe: 数据库进程
+    """
+    tmp_print(f'正在关闭{_exe}....')
+    for proc in psutil.process_iter(['pid', 'name']):
+        # 检查进程名
+        if proc.info['name'] == _exe:
+            tmp_print(f'找到进程{_exe},正在关闭...')
+            # 杀掉进程
+            try:
+                proc.kill()
+            except Exception as error:
+                if 'NoSuchProcess' in str(error): tmp_print('该进程已关闭')
+
+    tmp_print(f'{_exe}已全部关闭!')
 
 def get_today():
     """
@@ -136,3 +156,22 @@ def find_exe_path(exe_name):
     for proc in psutil.process_iter(attrs=['pid', 'name', 'exe']):
         if proc.info['name'] and exe_name.lower() in proc.info['name'].lower():
             return proc.info['exe']
+
+def is_process_running(process_name):
+    """
+    检查进程是否运行
+    :param process_name: 进程名
+    :return: True 运行中, False 未运行
+    """
+    try:
+        # 遍历所有运行中的进程
+        for proc in psutil.process_iter():
+            # 获取进程详情作为字典
+            process_info = proc.as_dict(attrs=['pid', 'name', 'create_time'])
+            # 检查进程名是否与目标进程名相匹配
+            if process_name.lower() in process_info['name'].lower():
+                return True
+        return False
+    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+        tmp_print('chrome安装失败, 程序被终止')
+        return False

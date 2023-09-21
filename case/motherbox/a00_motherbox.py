@@ -15,6 +15,7 @@ def main():
     input('按任意键回到主菜单')
     main()
 
+@DeprecationWarning
 def main2():
     """
     方式2: 可以使用prompt_toolkit库(取代之前自己写的input_what)

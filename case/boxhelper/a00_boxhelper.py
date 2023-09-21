@@ -1,38 +1,21 @@
 import shutil
+import time
+
 import psutil
 from a01_nettools import *
 from zboxtools import *
 
-def kill_exe(_exe):
-    """
-    关闭指定进程
-    java.exe: sonar.bat进程
-    pgAdmin4.exe: 数据库进程
-    """
-    tmp_print(f'正在关闭{_exe}....')
-    for proc in psutil.process_iter(['pid', 'name']):
-        # 检查进程名
-        if proc.info['name'] == _exe:
-            tmp_print(f'找到进程{_exe},正在关闭...')
-            # 杀掉进程
-            try:
-                proc.kill()
-            except Exception as error:
-                if 'NoSuchProcess' in str(error): tmp_print('该进程已关闭')
-
-    tmp_print(f'{_exe}已全部关闭!')
 
 def main():
     print('当前辅助器版本号: V', boxhelper_version)
-    motherbox_exe = 'a00_motherbox.exe'
     # 找到母盒进程所在的build文件夹
-    exe_abs_path = str(find_exe_path(motherbox_exe))  # a00_motherbox.exe所在的绝对路径
+    exe_abs_path = str(find_exe_path(motherbox_exe_p))  # a00_motherbox.exe所在的绝对路径
     amd64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11 目录
     build_dir = os.path.dirname(str(amd64_dir))  # build 目录
     build_in_who = os.path.dirname(str(build_dir))  # 用户目录 (build所在的目录)
     # 找到路径后再退出母盒
     tmp_print(f'正在退出当前母盒...')
-    kill_exe(motherbox_exe)
+    kill_exe(motherbox_exe_p)
     time.sleep(2)
     if exe_abs_path:
         # 检查网络
@@ -74,28 +57,16 @@ def main():
                 sys.exit(0)
         else:
             tmp_print("网络异常, 请根据以上提示检查网络相关连接!")
-            kill_exe(motherbox_exe)
+            kill_exe(motherbox_exe_p)
             input('请确保网络连接正常, 并按任意键再尝试')
             main()
     else:
-        tmp_print(f'未找到{motherbox_exe}所在目录!')
-        kill_exe(motherbox_exe)
-        input('请勿手动删除母盒!')
+        tmp_print(f'未找到{motherbox_exe_p}所在目录!')
+        kill_exe(motherbox_exe_p)
+        input('请勿手动删除母盒!(按任意键重启)')
+        time.sleep(1)
         main()
 
 if __name__ == '__main__':
-    # shutil.rmtree(r'C:\Users\huilin.xu\Desktop\d\build', onerror=del_rw)
-
-    # 下载 - 解压 - 删除
-    # download_obj(r'C:\Users\huilin.xu\Desktop\d\motherbox_1002.zip', 'autocase/android/motherbox/1001/motherbox_1002.zip')
-    # shutil.unpack_archive(r'C:\Users\huilin.xu\Desktop\d\motherbox_1002.zip', r'C:\Users\huilin.xu\Desktop\d')
-    # os.remove(r'C:\Users\huilin.xu\Desktop\d\motherbox_1002.zip')
-
-    # 删除
-    # exe_abs_path = r'C:\Users\huilin.xu\Desktop\d\build\exe.win-amd64-3.11\a00_motherbox.exe'
-    # arm64_dir = os.path.dirname(str(exe_abs_path))  # exe.win-amd64-3.11
-    # build_dir = os.path.dirname(str(arm64_dir))  # build
-    # tmp_print(f'正在删除当前母盒...')
-    # shutil.rmtree(build_dir, onerror=del_rw)
     main()
     pass

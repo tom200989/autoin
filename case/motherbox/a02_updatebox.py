@@ -11,11 +11,10 @@ def check_box_version():
     :return: True 有新版本, False 无新版本
     """
     # 检查是否minio连接
-    minio_state, minio_tip, minio_client = check_minio_connect()
-    if not minio_state:
-        tmp_print(f"x minio连接失败{minio_tip}")
+    if not check_minio():
+        tmp_print(f"x minio连接失败")
         return False
-    tmp_print(f"√ minio连接成功:{minio_tip}")
+    tmp_print(f"√ minio连接成功")
 
     # 获取minio的box版本号
     lastest_mversion = get_motherbox_version(minio_motherbox_root)
@@ -31,6 +30,8 @@ def check_box_version():
         tmp_print(f"当前版本: {motherbox_version}, 无最新版本")
         return False
 
+""" ----------------------------------------------- 更新母盒 ----------------------------------------------- """
+
 def update_box():
     # 检查网络是否畅通
     is_network = check_pingnet()
@@ -38,6 +39,10 @@ def update_box():
         # 如果有新版本, 则更新
         need_update = check_box_version()
         if need_update:
+            # 先结束母盒辅助器的进程
+            tmp_print('正在结束母盒辅助器进程...')
+            kill_exe(boxhelper_exe_p)
+            time.sleep(2)
             # 清空母盒辅助器目录 `.xxx/build`
             tmp_print('正在清空母盒辅助器目录...')
             mbh_build = os.path.join(boxhelper_dir, 'build')

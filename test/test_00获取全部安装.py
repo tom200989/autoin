@@ -1,3 +1,5 @@
+import re
+
 import winapps
 
 # 判断chrome是否有安装
@@ -11,3 +13,7 @@ if exe and len(exe) > 0:
             print(ex.install_location)
             print(ex.version)
             print(ex.uninstall_string)
+
+chrome_version = '200.112'
+is_match = bool(re.match(r'^(10[89]|1[1-9][0-9])\.', chrome_version))
+print(is_match)
