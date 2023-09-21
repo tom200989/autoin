@@ -161,9 +161,6 @@ def _install_chrome():
     # chrome_version_state: chrome版本状态(-1:过低,-2:过高,-3:未安装,-4:已安装)
     chrome_state, chrome_infos, chrome_tip, chrome_version_state = check_chrome()
 
-    # todo 2023/9/21 模拟chrome的版本状态
-    chrome_version_state = CHROME_LOW_VERSION
-
     # chrome重装状态
     chrome_reinstall_state = False
     # 2.如果版本过低或者过高, 则重装chrome
@@ -173,7 +170,9 @@ def _install_chrome():
     elif chrome_version_state == CHROME_NOT_INSTALL:
         chrome_reinstall_state = __reinstall_chrome()
 
-    if not chrome_reinstall_state: return False
+    if not chrome_reinstall_state:
+        tmp_print('x 未检测到可用的chrome, 请重试')
+        return False
 
     # 3.以上步骤完毕 - 检查chromedriver
     chromedriver_install_state = __checkdown_chromedriver()
@@ -185,4 +184,5 @@ def install_envs():
     # todo 2023/9/20 明天测试
     pass
 
-install_envs()
+if __name__ == '__main__':
+    install_envs()

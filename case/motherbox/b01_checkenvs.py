@@ -226,4 +226,3 @@ def check_all_sys():
         tmp_print('x 系统环境测试不通过!')
     tmp_print('>' * 80)
 
-# check_all_sys()

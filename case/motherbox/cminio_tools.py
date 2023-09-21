@@ -79,4 +79,3 @@ def get_motherbox_version(obj_prefix):
     tmp_print(f'最新版本: {new_version}')
     return int(new_version)
 
-# get_motherbox_version('autocase/android/motherbox/')
