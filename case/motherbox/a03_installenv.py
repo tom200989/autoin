@@ -145,6 +145,68 @@ def __reinstall_chrome(chrome_infos=None):
         tmp_print(f'重装chrome失败, 发生错误: {e}')
         return False
 
+def __reinstall_node(direct_install=False):
+    """
+    重装node
+    @param direct_install: 是否直接安装, 默认为False, 即先卸载再安装
+    """
+    # 检查网络是否正常
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return
+
+    node_infos = check_exe('Node.js')
+    # 先卸载 (如果已安装或者外部告诉需要卸载)
+    if len(node_infos) > 0 or not direct_install:
+        # 先卸载
+        tmp_print('正在卸载 Node.js...')
+        # 在node_infos中查找卸载命令(此处的索引可能会随着项目的迭代而变化)
+        uninstall_cmd = node_infos[3]
+        # 修改指令参数 (把/I修改为/x, 后边跟随/q以静默卸载)
+        uninstall_cmd = uninstall_cmd.replace('/I', '/x').replace('/i', '/x') + ' /q'
+        tmp_print(uninstall_cmd)
+        # 执行卸载命令, 先卸载
+        subprocess.run(uninstall_cmd, shell=True)
+        time.sleep(2)
+        tmp_print('Node.js 卸载完成')
+
+    # 安装
+    # 先清除nodejs目录
+    tmp_print('正在清除nodejs目录...')
+    if os.path.exists(str(nodejs_dir)):
+        shutil.rmtree(nodejs_dir, onerror=del_rw)
+        time.sleep(2)
+    # 从Minio下载msi安装包
+    tmp_print('正在下载nodejs安装包...')
+    nodejs_zip = os.path.join(nodejs_dir, 'nodejs.zip')
+    download_obj(nodejs_zip, minio_nodejs)
+    # 解压安装包
+    tmp_print('正在解压安装包...')
+    shutil.unpack_archive(nodejs_zip, nodejs_dir)
+    # 删除压缩包
+    tmp_print('正在删除压缩包...')
+    os.remove(str(nodejs_zip))
+    # 安装nodejs
+    tmp_print('正在安装nodejs...')
+    nodejs_msi_path = os.path.join(nodejs_dir, 'nodejs.msi')
+    # 把斜杠转换为反斜杠
+    nodejs_msi_path = nodejs_msi_path.replace('/', '\\')
+    install_command = f'msiexec /i {nodejs_msi_path} /q'
+    tmp_print(install_command)
+    try:
+        # 执行静默安装
+        subprocess.run(install_command, shell=True, check=True)
+        time.sleep(5)
+        new_node_v = check_exe('Node.js')[2]
+        tmp_print(f'成功安装 Node.js({new_node_v})')
+    except Exception as e:
+        tmp_print(f'安装Node.js失败: {e}')
+
+    # todo 2023/9/25 明天继续校验
+
+# __reinstall_node(True)
+
 def _install_chrome():
     """
     安装chrome
@@ -280,6 +342,29 @@ def _install_sdk_jdk_gradle():
 
     return all_i
 
+def _install_nodejs():
+    """
+    安装nodejs
+    :return:
+    """
+    node_state, node_tip, node_type = check_nodejs()
+    if not node_state:
+        # 判断类型
+        if node_type == NODE_NOT_INSTALL:
+            tmp_print('未安装nodejs, 准备开始安装...')  # todo 2023/9/25 直接安装
+        elif node_type == NODE_NOT_TARGET_VERSION:
+            tmp_print('nodejs版本不匹配, 准备开始重新安装...')  # todo 2023/9/25 先卸载再安装
+        elif node_type == NPM_NOT_INSTALL:
+            tmp_print('npm未安装, 准备开始重新安装...')  # todo 2023/9/25 先卸载再安装
+        elif node_type == NODE_NPM_ERROR:
+            tmp_print('nodejs和npm获取信息异常, 准备开始重新安装...')  # todo 2023/9/25 先卸载再安装
+        else:
+            tmp_print('nodejs已安装, 无需重装')
+            return True
+    else:
+        tmp_print('nodejs已安装, 无需重装')
+        return True
+
 def install_envs():
     # 安装chrome
     if not _install_chrome(): return
@@ -287,4 +372,5 @@ def install_envs():
     if not _install_sdk_jdk_gradle(): return
 
 if __name__ == '__main__':
-    _install_sdk_jdk_gradle()
+    # check_nodejs()
+    pass

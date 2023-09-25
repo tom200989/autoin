@@ -9,6 +9,7 @@ import sys
 import time
 
 import psutil
+import winapps
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
@@ -22,7 +23,12 @@ chromesetup_dir = root_dir + '/chromesetup'  # ChromeSetup.zip目录
 sdk_dir = root_dir + '/sdk'  # sdk目录
 jdk_dir = root_dir + '/jdk'  # jdk目录
 gradle_dir = root_dir + '/gradle'  # gradle目录
+nodejs_dir = root_dir + '/nodejs'  # nodejs目录
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
+
+# node.js的版本(固定)
+node_v = '16.18.1'
+minio_nodejs= 'autocase/android/env/nodejs/nodejs.zip'  # nodejs.zip的路径
 
 # minio配置信息
 endpoint = 'minio.ecoflow.com:9000'
@@ -227,3 +233,25 @@ def is_process_running(process_name):
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         tmp_print('chrome安装失败, 程序被终止')
         return False
+
+def check_exe(target_exe):
+    """
+    获取指定exe的安装信息
+    :return: [文件名, 安装路径, 版本, 卸载命令]
+    """
+    exe = [app.name for app in winapps.search_installed(target_exe)]
+    if exe and len(exe) > 0:
+        target_exe = target_exe.lower()
+        for ex in winapps.list_installed():
+            exe_name = str(ex.name).lower()
+            if exe_name in target_exe or target_exe in exe_name:
+                # 文件名, 安装路径, 版本, 卸载命令
+                exe_name = ex.name
+                exe_install_path = str(ex.install_location)
+                if exe_install_path == '' or exe_install_path is None:exe_install_path = str(ex.install_source)
+                exe_version = ex.version
+                exe_uninstall_string = ex.uninstall_string
+                return_info = [exe_name, exe_install_path, exe_version, exe_uninstall_string]
+                return return_info
+
+    return []

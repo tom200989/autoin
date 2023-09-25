@@ -12,31 +12,30 @@ CHROME_HAD_INSTALL = 1  # 已安装chrome
 lowest_version = 108  # 最低支持的chrome版本
 highest_version = 119  # 最高支持的chrome版本
 
+NODE_NOT_TARGET_VERSION = -1  # nodejs版本不是目标版本
+NODE_NOT_INSTALL = -2  # 未安装nodejs
+NPM_NOT_INSTALL = -3  # 未安装npm
+NODE_NPM_ERROR = -4  # nodejs和npm获取异常
+NODE_NPM_INSTALLED = 1  # 已安装nodejs和npm
+
 def check_chrome():
     """
     获取chrome的安装信息
     :return:
     """
-    target_exe = 'google chrome'
-    exe = [app.name for app in winapps.search_installed(target_exe)]
-    if exe and len(exe) > 0:
-        for ex in winapps.list_installed():
-            exe_name = str(ex.name).lower()
-            if exe_name in target_exe or target_exe in exe_name:
-                # chrome名, 安装路径, 版本, 卸载命令
-                chrome_name = ex.name
-                chrome_install_path = ex.install_location
-                chrome_version = ex.version
-                chrome_uninstall_string = ex.uninstall_string
-                return_info = [chrome_name, chrome_install_path, chrome_version, chrome_uninstall_string]
-                # 查看chrome版本是否小于108
-                if int(chrome_version.split('.')[0]) < lowest_version:
-                    return False, return_info, f"chrome版本过低(当前只支持{lowest_version}-{highest_version}版本)", CHROME_LOW_VERSION
-                elif int(chrome_version.split('.')[0]) > 119:
-                    return False, return_info, f"chrome版本过高(当前只支持{lowest_version}-{highest_version}版本)", CHROME_HIGH_VERSION
-                else:
-                    return True, return_info, "chrome已安装", CHROME_HAD_INSTALL
-    return False, [], "未安装chrome", CHROME_NOT_INSTALL
+    return_info = check_exe('google chrome')
+    if len(return_info) > 0:
+        # 获取chrome版本
+        chrome_version = return_info[2]
+        # 查看chrome版本是否小于108
+        if int(chrome_version.split('.')[0]) < lowest_version:
+            return False, return_info, f"chrome版本过低(当前只支持{lowest_version}-{highest_version}版本)", CHROME_LOW_VERSION
+        elif int(chrome_version.split('.')[0]) > 119:
+            return False, return_info, f"chrome版本过高(当前只支持{lowest_version}-{highest_version}版本)", CHROME_HIGH_VERSION
+        else:
+            return True, return_info, "chrome已安装", CHROME_HAD_INSTALL
+    else:
+        return False, return_info, "未安装chrome", CHROME_NOT_INSTALL
 
 def check_chromedriver(chrome_install_dir):
     """
@@ -86,31 +85,41 @@ def check_gradle():
 def check_nodejs():
     try:
         # 查询Node.js版本
-        state_node = True
         node_version = subprocess.getoutput('node --version')
         if '不是内部或外部命令' in node_version:  # 说明没有安装
-            tmp_print('x node 未安装')
-            state_node = False
+            tip = 'x node 未安装'
+            tmp_print(tip)
+            return False, tip, NODE_NOT_INSTALL
         else:
-            tmp_print(f'√ node版本：{node_version}')
+            exe_infos = check_exe('Node.js')
+            if len(exe_infos) > 0:
+                node_version = exe_infos[2]
+                if node_v in node_version or node_version in node_v:
+                    tmp_print(f'√ node版本：{node_version}')
+                else:
+                    tip = f'x node 当前版本：{node_version}不匹配 (要求:{node_v})'
+                    tmp_print(tip)
+                    return False, tip, NODE_NOT_TARGET_VERSION
+            else:
+                tip = 'x node 未安装'
+                tmp_print(tip)
+                return False, tip, NODE_NOT_INSTALL
 
         # 查询NPM版本
-        state_npm = True
         npm_version = subprocess.getoutput('npm --version')
         if '不是内部或外部命令' in node_version:  # 说明没有安装
-            tmp_print('x npm 未安装')
-            state_node = False
+            tip = 'x npm 未安装'
+            tmp_print(tip)
+            return False, tip, NPM_NOT_INSTALL
         else:
             tmp_print(f'√ npm版本：{npm_version}')
 
-        if state_node and state_npm:
-            tmp_print(f'√ nodejs 已安装')
-            return True
-        else:
-            return False
+        return True, '√ nodejs和npm已安装', NODE_NPM_INSTALLED
+
     except Exception as e:
-        tmp_print(f'x 获取nodejs版本失败：{e}')
-        return False
+        tip = f'x nodejs和npm获取信息异常'
+        tmp_print(tip, ":", str(e))
+        return False, tip, NODE_NPM_ERROR
 
 def check_appium():
     """
@@ -204,6 +213,7 @@ def check_all_sys():
     chromedriver_state, chromedriver_path, chromedriver_tip = check_chromedriver(chrome_install_path)
     envs_state, envs_tip = check_system_envpath(chrome_install_path)
     driver_state, driver_tip = check_driver()
+    node_state, node_tip, _ = check_nodejs()
 
     state_map = {  #
         'state_chrome': [chrome_state, f'tips: {chrome_tip}!'],  # chrome安装检测
@@ -212,7 +222,7 @@ def check_all_sys():
         'state_jdk': [check_jdk(), 'tips: 指定JDK环境变量未配置!'],  # JDK环境变量检测
         'state_ndk': [check_ndk(), 'tips: 指定NDK环境变量未配置!'],  # NDK环境变量检测
         'state_gradle': [check_gradle(), 'tips: 指定GRADLE环境变量未配置!'],  # Gradle环境变量检测
-        'state_nodejs': [check_nodejs(), 'tips: nodejs环境未配置!'],  # nodejs环境变量检测
+        'state_nodejs': [node_state, f'tips: {node_tip}!'],  # nodejs环境变量检测
         'state_appium': [check_appium(), 'tips: appium环境未配置!'],  # appium环境变量检测
         'state_driver': [driver_state, f'tips: {driver_tip}!'],  # appium环境变量检测
         'state_envs': [envs_state, f'tips: {envs_tip}!'],  # 系统环境变量检测
