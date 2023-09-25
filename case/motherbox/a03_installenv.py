@@ -178,11 +178,113 @@ def _install_chrome():
     chromedriver_install_state = __checkdown_chromedriver()
     return chromedriver_install_state
 
+def _install_sdk_jdk_gradle():
+    """
+    安装SDK/JDK/GRADLE
+    """
+    sdk_i, jdk_i, gradle_i = False, False, False
+
+    # 1.检查SDK是否安装
+    sdk_state = check_sdk()
+    # 2.检查JDK是否安装
+    jdk_state = check_jdk()
+    # 3.检查Gradle是否安装
+    gradle_state = check_gradle()
+    # 4.检查网络是否畅通
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return False
+    # 5.如果SDK和JDK都已安装, 则跳过
+    try:
+        if sdk_state:
+            tmp_print('√ SDK已安装')
+        else:
+            # 删除原来的SDK
+            tmp_print('正在删除原来的SDK...')
+            if os.path.exists(str(sdk_dir)):
+                shutil.rmtree(sdk_dir, onerror=del_rw)
+                time.sleep(2)
+            # 下载SDK
+            tmp_print('正在下载SDK...')
+            sdk_local_zip = os.path.join(sdk_dir, 'sdk.zip')
+            download_obj(sdk_local_zip, minio_sdk)
+            # 解压SDK
+            tmp_print('正在解压SDK...')
+            shutil.unpack_archive(str(sdk_local_zip), sdk_dir)
+            time.sleep(1)
+            # 删除压缩包
+            tmp_print('正在删除压缩包...')
+            os.remove(str(sdk_local_zip))
+
+        sdk_i = True
+    except Exception as e:
+        tmp_print(f'安装SDK失败, 发生错误: {e}')
+        sdk_i = False
+
+    try:
+        if jdk_state:
+            tmp_print('√ JDK已安装')
+        else:
+            # 删除原来的JDK
+            tmp_print('正在删除原来的JDK...')
+            if os.path.exists(str(jdk_dir)):
+                shutil.rmtree(jdk_dir, onerror=del_rw)
+                time.sleep(2)
+            # 下载JDK
+            tmp_print('正在下载JDK...')
+            jdk_local_zip = os.path.join(jdk_dir, 'jdk.zip')
+            download_obj(jdk_local_zip, minio_jdk)
+            # 解压JDK
+            tmp_print('正在解压JDK...')
+            shutil.unpack_archive(str(jdk_local_zip), jdk_dir)
+            time.sleep(1)
+            # 删除压缩包
+            tmp_print('正在删除压缩包...')
+            os.remove(str(jdk_local_zip))
+
+        jdk_i = True
+    except Exception as e:
+        tmp_print(f'安装JDK失败, 发生错误: {e}')
+        jdk_i = False
+
+    try:
+        if gradle_state:
+            tmp_print('√ Gradle已安装')
+        else:
+            # 删除原来的Gradle
+            tmp_print('正在删除原来的Gradle...')
+            if os.path.exists(str(gradle_dir)):
+                shutil.rmtree(gradle_dir, onerror=del_rw)
+                time.sleep(2)
+            # 下载Gradle
+            tmp_print('正在下载Gradle...')
+            gradle_local_zip = os.path.join(gradle_dir, 'gradle.zip')
+            download_obj(gradle_local_zip, minio_gradle)
+            # 解压Gradle
+            tmp_print('正在解压Gradle...')
+            shutil.unpack_archive(str(gradle_local_zip), gradle_dir)
+            time.sleep(1)
+            # 删除压缩包
+            tmp_print('正在删除压缩包...')
+            os.remove(str(gradle_local_zip))
+
+        gradle_i = True
+    except Exception as e:
+        tmp_print(f'安装Gradle失败, 发生错误: {e}')
+        gradle_i = False
+
+    all_i = sdk_i and jdk_i and gradle_i
+    if all_i:
+        tmp_print('√ SDK/JDK/Gradle全部已安装')
+
+    return all_i
+
 def install_envs():
     # 安装chrome
-    _install_chrome()
-    # todo 2023/9/20 明天测试
-    pass
+    if not _install_chrome(): return
+    # 安装SDK/JDK/GRADLE
+    if not _install_sdk_jdk_gradle(): return
 
 if __name__ == '__main__':
-    install_envs()
+    _install_sdk_jdk_gradle()

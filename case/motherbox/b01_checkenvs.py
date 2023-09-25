@@ -4,10 +4,10 @@ import subprocess
 import winapps
 from ctmp_tools import *
 
-CHROME_LOW_VERSION = -1 # chrome版本过低
-CHROME_HIGH_VERSION = -2 # chrome版本过高
-CHROME_NOT_INSTALL = -3 # 未安装chrome
-CHROME_HAD_INSTALL = 1 # 已安装chrome
+CHROME_LOW_VERSION = -1  # chrome版本过低
+CHROME_HIGH_VERSION = -2  # chrome版本过高
+CHROME_NOT_INSTALL = -3  # 未安装chrome
+CHROME_HAD_INSTALL = 1  # 已安装chrome
 
 lowest_version = 108  # 最低支持的chrome版本
 highest_version = 119  # 最高支持的chrome版本
@@ -56,8 +56,7 @@ def check_sdk():
     :return:
     """
     # 拼接SDK路径
-    sdk_path = os.path.join(root_dir, 'sdk')
-    return os.path.exists(sdk_path)
+    return is_dir_exits_above_100mb(sdk_dir)
 
 def check_ndk():
     """
@@ -65,8 +64,8 @@ def check_ndk():
     :return:
     """
     # 拼接NDK路径
-    ndk_path = os.path.join(root_dir, 'sdk', 'ndk')
-    return os.path.exists(ndk_path)
+    ndk_path = os.path.join(sdk_dir, 'ndk')
+    return is_dir_exits_above_100mb(ndk_path)
 
 def check_jdk():
     """
@@ -74,8 +73,15 @@ def check_jdk():
     :return:
     """
     # 拼接JDK路径
-    jdk_path = os.path.join(root_dir, 'jdk')
-    return os.path.exists(jdk_path)
+    return is_dir_exits_above_100mb(jdk_dir)
+
+def check_gradle():
+    """
+    获取Gradle的安装信息
+    :return:
+    """
+    # 拼接Gradle路径
+    return is_dir_exits_above_100mb(gradle_dir)
 
 def check_nodejs():
     try:
@@ -159,12 +165,12 @@ def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/App
     # 获取当前环境变量
     system_env_path = os.getenv('path')
     # SDK路径
-    test_sdk_home = os.path.join(root_dir, 'sdk')
+    test_sdk_home = sdk_dir
     test_platforms_path = os.path.join(test_sdk_home, 'platforms')
     test_platform_tools_path = os.path.join(test_sdk_home, 'platform-tools')
     test_ndk_path = os.path.join(root_dir, 'ndk')
     # JDK路径
-    test_jdk_home = os.path.join(root_dir, 'jdk')
+    test_jdk_home = jdk_dir
     test_jdk_bin_path = os.path.join(test_jdk_home, 'bin')
     # chrome-application路径
     test_chrome_home = chrome_install_path
@@ -205,6 +211,7 @@ def check_all_sys():
         'state_sdk': [check_sdk(), 'tips: 指定SDK环境变量未配置!'],  # SDK环境变量检测
         'state_jdk': [check_jdk(), 'tips: 指定JDK环境变量未配置!'],  # JDK环境变量检测
         'state_ndk': [check_ndk(), 'tips: 指定NDK环境变量未配置!'],  # NDK环境变量检测
+        'state_gradle': [check_gradle(), 'tips: 指定GRADLE环境变量未配置!'],  # Gradle环境变量检测
         'state_nodejs': [check_nodejs(), 'tips: nodejs环境未配置!'],  # nodejs环境变量检测
         'state_appium': [check_appium(), 'tips: appium环境未配置!'],  # appium环境变量检测
         'state_driver': [driver_state, f'tips: {driver_tip}!'],  # appium环境变量检测
@@ -225,4 +232,3 @@ def check_all_sys():
     else:
         tmp_print('x 系统环境测试不通过!')
     tmp_print('>' * 80)
-

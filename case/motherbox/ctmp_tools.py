@@ -19,6 +19,9 @@ root_dir = 'D:/autocase'  # 本地根目录
 patch_dir = root_dir + '/case_log'  # 运行日志目录
 boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
 chromesetup_dir = root_dir + '/chromesetup'  # ChromeSetup.zip目录
+sdk_dir = root_dir + '/sdk'  # sdk目录
+jdk_dir = root_dir + '/jdk'  # jdk目录
+gradle_dir = root_dir + '/gradle'  # gradle目录
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 
 # minio配置信息
@@ -37,6 +40,25 @@ minio_boxhelper_root = 'autocase/android/boxhelper/'  # boxhelper的根目录 (�
 minio_chrome_zip = 'autocase/android/env/chromes/chrome/ChromeSetup.zip'  # chrome.exe的路径
 # chromedriver目录路径
 minio_chromedriver_root = 'autocase/android/env/chromes/chromedriver/'  # chromedriver目录路径(需遍历)
+
+# sdk.zip路径
+minio_sdk = 'autocase/android/env/sdk/sdk1.zip'  # sdk.zip的路径
+# jdk.zip路径
+minio_jdk = 'autocase/android/env/jdk/jdk.zip'  # jdk.zip的路径
+# gradle.zip路径
+minio_gradle = 'autocase/android/env/gradle/gradle.zip'  # gradle.zip的路径
+
+def is_dir_exits_above_100mb(folder_path):
+    """
+    判断文件夹是否存在, 并且文件夹大小是否大于100MB
+    :param folder_path:
+    :return:  True: 存在且大于1MB, False: 不存在或小于100MB
+    """
+    if not os.path.isdir(folder_path):
+        return False
+
+    folder_size = sum(os.path.getsize(os.path.join(root, file)) for root, _, files in os.walk(folder_path) for file in files)
+    return folder_size >= 100 * 1024 * 1024
 
 def kill_exe(_exe):
     """
@@ -205,4 +227,3 @@ def is_process_running(process_name):
     except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
         tmp_print('chrome安装失败, 程序被终止')
         return False
-

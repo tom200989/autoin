@@ -2,6 +2,7 @@ import urllib3
 from minio import Minio
 from minio.error import S3Error
 from ctmp_tools import *
+from cprogress import Progress
 
 def check_minio_connect():
     """
@@ -27,11 +28,12 @@ def check_minio_connect():
             tmp_print(f'连接失败, {e}')
         return False, str(e), None
 
-def download_obj(local_path, obj_name):
+def download_obj(local_path, obj_name, progress=None):
     """
     从minio下载文件
     :param local_path:  本地路径
     :param obj_name:  object名称
+    :param progress:  进度条
     """
     try:
         # 创建目录
@@ -40,7 +42,7 @@ def download_obj(local_path, obj_name):
             os.makedirs(local_dir)
 
         client = Minio(endpoint, access_key=access_key, secret_key=secret_key, )
-        client.fget_object(bucket_name, obj_name, local_path)
+        client.fget_object(bucket_name, obj_name, local_path, progress=Progress())
         tmp_print(f"正在下载 {bucket_name} 到 {local_path}")
         return True
     except Exception as err:
@@ -78,4 +80,3 @@ def get_motherbox_version(obj_prefix):
     new_version = max(versions)
     tmp_print(f'最新版本: {new_version}')
     return int(new_version)
-
