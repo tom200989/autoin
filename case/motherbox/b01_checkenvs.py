@@ -85,19 +85,19 @@ def check_gradle():
 def check_nodejs():
     try:
         # 查询Node.js版本
-        node_version = subprocess.getoutput('node --version')
-        if '不是内部或外部命令' in node_version:  # 说明没有安装
+        node_v = subprocess.getoutput('node --version')
+        if '不是内部或外部命令' in node_v:  # 说明没有安装
             tip = 'x node 未安装'
             tmp_print(tip)
             return False, tip, NODE_NOT_INSTALL
         else:
             exe_infos = check_exe('Node.js')
             if len(exe_infos) > 0:
-                node_version = exe_infos[2]
-                if node_v in node_version or node_version in node_v:
-                    tmp_print(f'√ node版本：{node_version}')
+                node_v = exe_infos[2]
+                if node_target in node_v or node_v in node_target:
+                    tmp_print(f'√ node版本：{node_v}')
                 else:
-                    tip = f'x node 当前版本：{node_version}不匹配 (要求:{node_v})'
+                    tip = f'x node 当前版本：{node_v}不匹配 (要求:{node_target})'
                     tmp_print(tip)
                     return False, tip, NODE_NOT_TARGET_VERSION
             else:
@@ -107,7 +107,7 @@ def check_nodejs():
 
         # 查询NPM版本
         npm_version = subprocess.getoutput('npm --version')
-        if '不是内部或外部命令' in node_version:  # 说明没有安装
+        if '不是内部或外部命令' in node_v:  # 说明没有安装
             tip = 'x npm 未安装'
             tmp_print(tip)
             return False, tip, NPM_NOT_INSTALL

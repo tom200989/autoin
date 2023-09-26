@@ -27,7 +27,7 @@ nodejs_dir = root_dir + '/nodejs'  # nodejs目录
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 
 # node.js的版本(固定)
-node_v = '16.18.1'
+node_target = '16.18.1'
 minio_nodejs= 'autocase/android/env/nodejs/nodejs.zip'  # nodejs.zip的路径
 
 # minio配置信息

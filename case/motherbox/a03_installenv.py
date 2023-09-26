@@ -157,19 +157,21 @@ def __reinstall_node(direct_install=False):
         return
 
     node_infos = check_exe('Node.js')
-    # 先卸载 (如果已安装或者外部告诉需要卸载)
-    if len(node_infos) > 0 or not direct_install:
-        # 先卸载
-        tmp_print('正在卸载 Node.js...')
-        # 在node_infos中查找卸载命令(此处的索引可能会随着项目的迭代而变化)
-        uninstall_cmd = node_infos[3]
-        # 修改指令参数 (把/I修改为/x, 后边跟随/q以静默卸载)
-        uninstall_cmd = uninstall_cmd.replace('/I', '/x').replace('/i', '/x') + ' /q'
-        tmp_print(uninstall_cmd)
-        # 执行卸载命令, 先卸载
-        subprocess.run(uninstall_cmd, shell=True)
-        time.sleep(2)
-        tmp_print('Node.js 卸载完成')
+    # 先卸载 (如果不是直接安裝)
+    if not direct_install:
+        # 也要先判断下是否需要卸载
+        if len(node_infos) > 0:
+            # 先卸载
+            tmp_print('正在卸载 Node.js...')
+            # 在node_infos中查找卸载命令(此处的索引可能会随着项目的迭代而变化)
+            uninstall_cmd = node_infos[3]
+            # 修改指令参数 (把/I修改为/x, 后边跟随/q以静默卸载)
+            uninstall_cmd = uninstall_cmd.replace('/I', '/x').replace('/i', '/x') + ' /q'
+            tmp_print(uninstall_cmd)
+            # 执行卸载命令, 先卸载
+            subprocess.run(uninstall_cmd, shell=True)
+            time.sleep(2)
+            tmp_print('Node.js 卸载完成')
 
     # 安装
     # 先清除nodejs目录
@@ -202,10 +204,6 @@ def __reinstall_node(direct_install=False):
         tmp_print(f'成功安装 Node.js({new_node_v})')
     except Exception as e:
         tmp_print(f'安装Node.js失败: {e}')
-
-    # todo 2023/9/25 明天继续校验
-
-# __reinstall_node(True)
 
 def _install_chrome():
     """
@@ -348,22 +346,28 @@ def _install_nodejs():
     :return:
     """
     node_state, node_tip, node_type = check_nodejs()
-    if not node_state:
+    if not node_state:  # 不符合要求
         # 判断类型
         if node_type == NODE_NOT_INSTALL:
-            tmp_print('未安装nodejs, 准备开始安装...')  # todo 2023/9/25 直接安装
+            tmp_print('未安装nodejs, 准备开始安装...')
+            __reinstall_node(True)  # 直接安裝
         elif node_type == NODE_NOT_TARGET_VERSION:
-            tmp_print('nodejs版本不匹配, 准备开始重新安装...')  # todo 2023/9/25 先卸载再安装
+            tmp_print('nodejs版本不匹配, 准备开始重新安装...')
+            __reinstall_node()  # 先卸载再安装
         elif node_type == NPM_NOT_INSTALL:
-            tmp_print('npm未安装, 准备开始重新安装...')  # todo 2023/9/25 先卸载再安装
+            tmp_print('npm未安装, 准备开始重新安装...')
+            __reinstall_node()  # 先卸载再安装
         elif node_type == NODE_NPM_ERROR:
-            tmp_print('nodejs和npm获取信息异常, 准备开始重新安装...')  # todo 2023/9/25 先卸载再安装
+            tmp_print('nodejs和npm获取信息异常, 准备开始重新安装...')
+            __reinstall_node()  # 先卸载再安装
         else:
             tmp_print('nodejs已安装, 无需重装')
             return True
     else:
-        tmp_print('nodejs已安装, 无需重装')
+        tmp_print('nodejs已安装且符合要求, 无需重装')
         return True
+
+_install_nodejs()
 
 def install_envs():
     # 安装chrome
