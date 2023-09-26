@@ -30,6 +30,9 @@ boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 node_target = '16.18.1'
 minio_nodejs= 'autocase/android/env/nodejs/nodejs.zip'  # nodejs.zip的路径
 
+# appium的版本(固定)
+appium_target = '1.22.3'
+
 # minio配置信息
 endpoint = 'minio.ecoflow.com:9000'
 access_key = 'EQS4J84JGJCDYNENIMT1'

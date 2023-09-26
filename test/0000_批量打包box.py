@@ -5,6 +5,7 @@ import os
 import time
 import tempfile
 
+import urllib3
 from minio import Minio
 from minio.error import S3Error
 from case.motherbox.ctmp_tools import motherbox_version
@@ -29,7 +30,7 @@ def __upload_minio(*args):
     minio_motherbox_x, motherbox_zip, minio_boxhelper_x, boxhelper_zip = args
 
     try:
-        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, )
+        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, http_client=urllib3.PoolManager(timeout=2))
         result = client.fput_object(bucket_name=bucket_name, object_name=minio_motherbox_x, file_path=motherbox_zip, num_parallel_uploads=1)
         print(f"正在上传{result.object_name}, (版本: {motherbox_version})")
         result2 = client.fput_object(bucket_name=bucket_name, object_name=minio_boxhelper_x, file_path=boxhelper_zip, num_parallel_uploads=1)
@@ -44,7 +45,7 @@ def __need_version():
     自动从minio获取版本号并自增+1
     :return:
     """
-    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True)
+    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True,http_client=urllib3.PoolManager(timeout=2))
     objects = client.list_objects(bucket_name, prefix=minio_motherbox_root, recursive=True)
     versions = []
     for obj in objects:

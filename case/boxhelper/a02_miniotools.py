@@ -33,7 +33,7 @@ def list_minio_objs(obj_prefix):
     :return: object列表
     """
     try:
-        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True)
+        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True, http_client=urllib3.PoolManager(timeout=2))
         objects = client.list_objects(bucket_name, prefix=obj_prefix, recursive=True)
         obj_names = []
         for obj in objects:
@@ -55,7 +55,7 @@ def download_obj(local_path, obj_name):
         if not os.path.exists(local_dir):
             os.makedirs(local_dir)
 
-        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, )
+        client = Minio(endpoint, access_key=access_key, secret_key=secret_key, http_client=urllib3.PoolManager(timeout=2))
         client.fget_object(bucket_name, obj_name, local_path)
         tmp_print(f"正在下载 {bucket_name} 到 {local_path}")
         return True

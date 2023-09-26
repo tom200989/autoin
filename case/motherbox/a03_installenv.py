@@ -3,6 +3,8 @@ import shutil
 from b00_checknet import *
 from b01_checkenvs import *
 
+""" ----------------------------------------------- 基础操作 ----------------------------------------------- """
+
 def __checkdown_chromedriver():
     """
     检查chromedriver是否下载
@@ -154,7 +156,7 @@ def __reinstall_node(direct_install=False):
     is_network = check_pingnet()
     if not is_network:
         tmp_print('x 网络异常, 请检查网络')
-        return
+        return False
 
     node_infos = check_exe('Node.js')
     # 先卸载 (如果不是直接安裝)
@@ -202,14 +204,61 @@ def __reinstall_node(direct_install=False):
         time.sleep(5)
         new_node_v = check_exe('Node.js')[2]
         tmp_print(f'成功安装 Node.js({new_node_v})')
+        return True
     except Exception as e:
         tmp_print(f'安装Node.js失败: {e}')
+        return False
+
+def __reinstall_appium(direct_install=False):
+    # todo 2023/9/26
+    """
+    重装appium
+    :param direct_install:  是否直接安装, 默认为False, 即先卸载再安装
+    """
+    # 检查网络是否正常
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return False
+
+    # 卸载
+    if not direct_install:
+        tmp_print('正在卸载 Appium...')
+        try:
+            subprocess.run('npm uninstall appium -g ', shell=True)
+        except Exception as e:
+            tmp_print(f'卸载Appium失败: {e}')
+            return False
+        time.sleep(5)
+        tmp_print('Appium 卸载完成')
+
+    # 安装
+    tmp_print('正在安装 Appium...')
+    install_cmd = 'npm --registry http://registry.npm.taobao.org install appium@1.22.3 -g --no-optional --verbose --no-audit --no-fund'
+    tmp_print(install_cmd)
+    try:
+        # 执行安装
+        subprocess.run(install_cmd, shell=True, check=True)
+        time.sleep(5)
+        tmp_print('Appium 安装完成')
+        return True
+    except Exception as e:
+        tmp_print(f'安装Appium失败: {e}')
+        return False
+
+""" ----------------------------------------------- 各步骤 ----------------------------------------------- """
 
 def _install_chrome():
     """
     安装chrome
     :return:  True 安装成功, False 安装失败
     """
+    # 检查网络是否正常
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return False
+
     # 0.结束chrome进程
     kill_exe('chrome.exe')
     kill_exe('chromedriver.exe')
@@ -345,21 +394,26 @@ def _install_nodejs():
     安装nodejs
     :return:
     """
+    # 检查网络是否正常
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return False
     node_state, node_tip, node_type = check_nodejs()
     if not node_state:  # 不符合要求
         # 判断类型
         if node_type == NODE_NOT_INSTALL:
             tmp_print('未安装nodejs, 准备开始安装...')
-            __reinstall_node(True)  # 直接安裝
+            return __reinstall_node(True)  # 直接安裝
         elif node_type == NODE_NOT_TARGET_VERSION:
             tmp_print('nodejs版本不匹配, 准备开始重新安装...')
-            __reinstall_node()  # 先卸载再安装
+            return __reinstall_node()  # 先卸载再安装
         elif node_type == NPM_NOT_INSTALL:
             tmp_print('npm未安装, 准备开始重新安装...')
-            __reinstall_node()  # 先卸载再安装
+            return __reinstall_node()  # 先卸载再安装
         elif node_type == NODE_NPM_ERROR:
             tmp_print('nodejs和npm获取信息异常, 准备开始重新安装...')
-            __reinstall_node()  # 先卸载再安装
+            return __reinstall_node()  # 先卸载再安装
         else:
             tmp_print('nodejs已安装, 无需重装')
             return True
@@ -367,13 +421,48 @@ def _install_nodejs():
         tmp_print('nodejs已安装且符合要求, 无需重装')
         return True
 
-_install_nodejs()
+def _install_appium():
+    """
+    安装appium
+    :return:
+    """
+    # 检查网络是否正常
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return False
+
+    appium_state, appium_tip, appium_type = check_appium()
+
+
+    if not appium_state:  # 不符合要求
+        if appium_type == APPIUM_HAD_INSTALL:
+            tmp_print('appium已安装且符合要求, 无需重装')
+            return True
+        elif appium_type == APPIUM_NOT_INSTALL:
+            tmp_print('appium未安装, 准备开始安装...')
+            __reinstall_appium(True)  # 直接安装
+        elif appium_type == APPIUM_NOT_TARGET_VERSION:
+            tmp_print('appium版本非指定版本, 即将重新安装...')
+            __reinstall_appium()  # 先卸载再安装
+        elif appium_type == APPIUM_ERROR:
+            tmp_print('检测appium版本出错, 即将重新安装...')
+            __reinstall_appium()  # 先卸载再安装
+    else:  # 符合要求
+        tmp_print('appium已安装且符合要求, 无需重装')
+        return True
+
+_install_appium()
+
+""" ----------------------------------------------- 总流程 ----------------------------------------------- """
 
 def install_envs():
     # 安装chrome
     if not _install_chrome(): return
     # 安装SDK/JDK/GRADLE
     if not _install_sdk_jdk_gradle(): return
+    # 安装nodejs
+    if not _install_nodejs(): return
 
 if __name__ == '__main__':
     # check_nodejs()

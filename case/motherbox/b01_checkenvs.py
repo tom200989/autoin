@@ -18,6 +18,11 @@ NPM_NOT_INSTALL = -3  # 未安装npm
 NODE_NPM_ERROR = -4  # nodejs和npm获取异常
 NODE_NPM_INSTALLED = 1  # 已安装nodejs和npm
 
+APPIUM_NOT_TARGET_VERSION = -1  # appium版本不是目标版本
+APPIUM_NOT_INSTALL = -2  # 未安装appium
+APPIUM_ERROR = -3  # appium获取异常
+APPIUM_HAD_INSTALL = 1  # 已安装appium
+
 def check_chrome():
     """
     获取chrome的安装信息
@@ -90,12 +95,16 @@ def check_nodejs():
             tip = 'x node 未安装'
             tmp_print(tip)
             return False, tip, NODE_NOT_INSTALL
+        # 版本安装了
         else:
+            # 再次检查 - 防止中途在外部被卸载
             exe_infos = check_exe('Node.js')
             if len(exe_infos) > 0:
                 node_v = exe_infos[2]
+                # 版本匹配(16.18.1)
                 if node_target in node_v or node_v in node_target:
                     tmp_print(f'√ node版本：{node_v}')
+                # 版本不匹配(16.18.1)
                 else:
                     tip = f'x node 当前版本：{node_v}不匹配 (要求:{node_target})'
                     tmp_print(tip)
@@ -126,18 +135,42 @@ def check_appium():
     查询appium是否安装
     :return:
     """
+
     try:
-        # 查询Appium版本
-        appium_version = subprocess.getoutput('appium --version')
-        if '不是内部或外部命令' in appium_version:
-            tmp_print('x appium 未安装')
-            return False
-        tmp_print(f'√ appium版本：{appium_version}')
-        tmp_print(f'√ appium 已安装')
-        return True
+        # 使用 npm list -g --depth=0 查询appium字样是否存在(存在则表明安装了appium)
+        # C:\Users\huilin.xu\AppData\Roaming\npm
+        # `-- appium@1.22.3
+        appium_infos = subprocess.getoutput('npm list -g --depth=0')
+        if 'appium@' not in appium_infos:
+            tip = 'x appium 未安装'
+            tmp_print(tip)
+            return False, tip, APPIUM_NOT_INSTALL
+
+        # 如果路径存在(带appium字样)
+        else:
+            match = re.search(r'appium@([\d.]+)', appium_infos)
+            if match:
+                # 得到appium版本
+                appium_v = match.group(1)
+                # 判断版本是否为1.22.3版本
+                if appium_target in appium_v or appium_v in appium_target:
+                    tip = f'√ appium版本：{appium_v}'
+                    tmp_print(tip)
+                    return True, tip, APPIUM_HAD_INSTALL
+                else:
+                    tip = f'x appium版本：{appium_v}不匹配 (要求:{appium_target})'
+                    tmp_print(tip)
+                    return False, tip, APPIUM_NOT_TARGET_VERSION
+
+        # 其他情况一律认为是获取异常
+        tip = f'x appium版本获取失败'
+        tmp_print(tip)
+        return False, tip, APPIUM_ERROR
+
     except Exception as e:
-        tmp_print(f'x 获取appium版本失败：{e}')
-        return False
+        tip = f'x appium版本获取异常：{e}'
+        tmp_print(tip)
+        return False, tip, APPIUM_ERROR
 
 def check_driver(drivers=None):
     """
@@ -214,6 +247,7 @@ def check_all_sys():
     envs_state, envs_tip = check_system_envpath(chrome_install_path)
     driver_state, driver_tip = check_driver()
     node_state, node_tip, _ = check_nodejs()
+    appium_state, appium_tip, _ = check_appium()
 
     state_map = {  #
         'state_chrome': [chrome_state, f'tips: {chrome_tip}!'],  # chrome安装检测
@@ -223,7 +257,7 @@ def check_all_sys():
         'state_ndk': [check_ndk(), 'tips: 指定NDK环境变量未配置!'],  # NDK环境变量检测
         'state_gradle': [check_gradle(), 'tips: 指定GRADLE环境变量未配置!'],  # Gradle环境变量检测
         'state_nodejs': [node_state, f'tips: {node_tip}!'],  # nodejs环境变量检测
-        'state_appium': [check_appium(), 'tips: appium环境未配置!'],  # appium环境变量检测
+        'state_appium': [appium_state, 'tips: appium环境未配置!'],  # appium环境变量检测
         'state_driver': [driver_state, f'tips: {driver_tip}!'],  # appium环境变量检测
         'state_envs': [envs_state, f'tips: {envs_tip}!'],  # 系统环境变量检测
     }
