@@ -85,6 +85,7 @@ def check_gradle():
     :return:
     """
     # 拼接Gradle路径
+    # 此处直接用文件夹是否存在来判断, 不使用 gradle -v 的指令, 因为要切换到gradle目录下才能执行, 而现在需要判断是否安装了gradle
     return is_dir_exits_above_100mb(gradle_dir)
 
 def check_nodejs():
@@ -178,29 +179,34 @@ def check_driver(drivers=None):
     """
     检查驱动是否安装
     :param drivers:
-    :return:
+    ch341ser: 芯片日志驱动
+    ch343ser: 芯片日志驱动
+    slabvcp: 继电器驱动
     """
-    if not drivers: drivers = ['CH341SER_A64', 'CH343SER_A64', 'silabser']
-    command = ['cmd', '/c', 'driverquery']
+    if not drivers:drivers = target_driver
+    command = ['PnPUtil', '/enum-drivers']
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
 
     if stderr:
         tmp_print(stderr.decode('gbk'))
-        return False, '驱动检查失败,请重试'
+        return False, '驱动检查失败,请重试', []
     else:
         result = stdout.decode('gbk')
-        # 开始切割
-        lines = result.split('\n')
-        all_modules = [line.split(' ', 1)[0] for line in lines if line]
+
+        less_drivers = {}
+        for key, value in drivers.items():
+            if key not in result:
+                less_drivers[key] = value
+
         # 查询哪些驱动没有安装
-        diff = set(drivers) - set(all_modules)
-        if diff and len(diff) > 0:
-            tmp_print(f'x 以下驱动没有安装: {diff}')
-            return False, f'当前驱动{list(diff)}未安装'
+        if len(less_drivers) > 0:
+            driver_list = list(less_drivers.keys())
+            tmp_print(f'x 以下驱动没有安装: {driver_list}')
+            return False, f'当前驱动{list(less_drivers.keys())}未安装', driver_list
         else:
             tmp_print('驱动检查通过')
-            return True, '驱动检查通过'
+            return True, '驱动检查通过', []
 
 def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/Application'):
     """
@@ -247,7 +253,7 @@ def check_all_sys():
     chrome_install_path = chrome_infos[1]
     chromedriver_state, chromedriver_path, chromedriver_tip = check_chromedriver(chrome_install_path)
     envs_state, envs_tip = check_system_envpath(chrome_install_path)
-    driver_state, driver_tip = check_driver()
+    driver_state, driver_tip, _ = check_driver()
     node_state, node_tip, _ = check_nodejs()
     appium_state, appium_tip, _ = check_appium()
 

@@ -24,6 +24,7 @@ sdk_dir = root_dir + '/sdk'  # sdk目录
 jdk_dir = root_dir + '/jdk'  # jdk目录
 gradle_dir = root_dir + '/gradle'  # gradle目录
 nodejs_dir = root_dir + '/nodejs'  # nodejs目录
+driver_dir = root_dir + '/driver'  # driver目录
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 
 # node.js的版本(固定)
@@ -56,6 +57,14 @@ minio_sdk = 'autocase/android/env/sdk/sdk1.zip'  # sdk.zip的路径
 minio_jdk = 'autocase/android/env/jdk/jdk.zip'  # jdk.zip的路径
 # gradle.zip路径
 minio_gradle = 'autocase/android/env/gradle/gradle.zip'  # gradle.zip的路径
+
+# driver.zip路径
+minio_driver_root = 'autocase/android/env/driver/'  # driver的根路径
+target_driver = {  # 当前自动化脚本所需要的驱动
+    'ch341ser.inf': '该驱动用于读取芯片日志',  #
+    'ch343ser.inf': '该驱动用于读取芯片日志',  #
+    'slabvcp.inf': '该驱动用于控制继电器',  #
+}  #
 
 def is_dir_exits_above_100mb(folder_path):
     """

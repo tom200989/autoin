@@ -460,6 +460,133 @@ def _install_appium():
         tmp_print('√ appium已安装且符合要求, 无需重装')
         return True
 
+def _uninstall_driver(driver_names):
+    """
+    卸载驱动
+    :param driver_names: 驱动名列表
+    """
+    # 执行PnPUtil命令并获取输出结果
+    cmd_output = subprocess.check_output('PnPUtil /enum-drivers', shell=True, text=True)
+    # 把多行字符串拆成行列表
+    lines = cmd_output.split("\n")
+    for driver_name in driver_names:
+        # 初始化发布名称
+        publish_name = None
+        # 遍历行列表
+        for i, line in enumerate(lines):
+            # 如果找到了目标字符串
+            if f"{driver_name.lower()}" in line.lower():
+                # 取前一行，获取发布名称
+                publish_name = lines[i - 1].split(":")[1].strip()
+                break
+
+        # 输出结果
+        if publish_name:
+            tmp_print(f"找到匹配项，发布名称为: {publish_name}")
+            # 开始卸载
+            subprocess.run(f"PnPUtil /delete-driver {publish_name} /uninstall", shell=True, check=True)
+            tmp_print("卸载成功")
+        else:
+            tmp_print(f"未找到驱动: {driver_name}")
+
+    # 再次检查
+    un_state, un_tip, un_list = check_driver()
+    if un_state:  # 如果还能检查出驱动
+        tmp_print(f'x 驱动卸载失败, {un_list}未卸载干净')
+        return False
+    elif not un_state and not '驱动检查失败' in un_tip:  # 如果状态为False, 且没有`驱动检查失败`的提示 - 就认为卸载成功
+        tmp_print('√ 全部驱动卸载完成')
+        # 删除驱动总目录(D:/autocase/driver)
+        if os.path.exists(str(driver_dir)):
+            tmp_print('正在删除驱动总目录...')
+            shutil.rmtree(driver_dir, onerror=del_rw)
+            tmp_print('√ 驱动总目录删除成功')
+        return True
+    else:
+        tmp_print(f'x 驱动卸载异常')
+        return False
+
+def _install_driver(retry=0):
+    # 检查网络是否正常
+    is_network = check_pingnet()
+    if not is_network:
+        tmp_print('x 网络异常, 请检查网络')
+        return False
+    try:
+        # 检查哪个驱动未安装
+        d_state, d_tip, d_uninstall = check_driver()
+        if d_uninstall and len(d_uninstall) > 0:
+            # 说明有驱动未安装
+            tmp_print(f'{d_uninstall}驱动未安装, 即将开始安装...')
+
+            # minio下载驱动
+            for d_u in d_uninstall:
+                # 截取驱动名 ch341ser.inf -> ch341ser
+                d_name = d_u[:d_u.rfind('.')].lower()
+                # 从 minio下载 D:/autocase/driver/ch341ser/ch341ser.zip -- autocase/android/env/driver/ch341ser.zip
+                local_driver_x_dir = os.path.join(driver_dir, d_name)  # 单个驱动目录
+                if os.path.exists(str(local_driver_x_dir)): shutil.rmtree(local_driver_x_dir, onerror=del_rw)  # 先删除旧的驱动
+                os.makedirs(local_driver_x_dir)  # 再创建新的驱动目录
+                local_driver_zip = os.path.join(driver_dir, d_name, f'{d_name}.zip')  # 创建压缩包
+                minio_driver = minio_driver_root + d_name + '.zip'  # minio下载驱动路径
+                download_obj(local_driver_zip, minio_driver)  # 开始下载
+                time.sleep(3)
+
+            # 解压驱动
+            for d_u in d_uninstall:
+                # 截取驱动名 ch341ser.inf -> ch341ser
+                d_name = d_u[:d_u.rfind('.')].lower()
+                # 解压驱动
+                tmp_print(f'正在解压驱动: {d_name}...')
+                local_driver_zip = os.path.join(driver_dir, d_name, f'{d_name}.zip')
+                shutil.unpack_archive(local_driver_zip, os.path.join(driver_dir, d_name))
+                # 删除压缩包
+                tmp_print(f'正在删除压缩包: {d_name}...')
+                os.remove(str(local_driver_zip))
+
+            # 安装驱动
+            for d_u in d_uninstall:
+                # 截取驱动名 ch341ser.inf -> ch341ser
+                d_name = d_u[:d_u.rfind('.')].lower()
+                # 安装驱动
+                tmp_print(f'正在安装驱动: {d_name}...')
+                local_driver_dir = os.path.join(driver_dir, d_name)
+                if 'ch343ser' in d_name or d_name in 'ch343ser':  # 如果是ch343ser驱动, 则需要进入Driver目录
+                    local_driver_dir = os.path.join(local_driver_dir, 'Driver')
+                # 拼接驱动安装指令
+                install_cmd = f'PnPUtil /add-driver {local_driver_dir}/{d_u} /install'
+                tmp_print(install_cmd)
+                # 执行安装指令
+                subprocess.run(install_cmd, shell=True, text=True, check=True)
+                time.sleep(2)
+
+            # 再次检查
+            new_state, new_tip, new_uninstall = check_driver()
+            if new_state:
+                tmp_print('√ 所需驱动全部安装完成')
+                return True
+            else:
+                if retry <= 0:  # 如果重试次数小于等于0, 进行重试
+                    tmp_print('x 驱动安装失败, 正在重试...')
+                    is_un = _uninstall_driver(list(target_driver.keys()))
+                    if is_un:
+                        return _install_driver(retry + 1)  # 如果卸载成功, 则再次安装
+                    else:
+                        tmp_print('x 驱动重试失败, 不再重试, 请人工检查')
+                        return False
+                else:
+                    tmp_print('x 驱动安装失败, 不再重试, 请人工检查')
+                    return False
+        else:
+            tmp_print('√ 所需驱动全部已安装')
+            return True
+    except Exception as e:
+        tmp_print(f'安装驱动失败, 发生错误: {e}')
+        return False
+
+_install_driver()
+# _uninstall_driver(list(target_driver.keys()))
+
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """
 
 def install_envs():
@@ -469,6 +596,8 @@ def install_envs():
     if not _install_sdk_jdk_gradle(): return
     # 安装nodejs
     if not _install_nodejs(): return
+    # 安装appium
+    if not _install_appium(): return
 
 if __name__ == '__main__':
     # check_nodejs()
