@@ -460,8 +460,6 @@ def _install_appium():
         tmp_print('√ appium已安装且符合要求, 无需重装')
         return True
 
-_install_appium()
-
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """
 
 def install_envs():
