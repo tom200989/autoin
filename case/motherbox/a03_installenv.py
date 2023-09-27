@@ -584,9 +584,6 @@ def _install_driver(retry=0):
         tmp_print(f'安装驱动失败, 发生错误: {e}')
         return False
 
-_install_driver()
-# _uninstall_driver(list(target_driver.keys()))
-
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """
 
 def install_envs():
