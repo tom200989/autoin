@@ -133,13 +133,13 @@ def check_nodejs():
 def check_appium():
     """
     查询appium是否安装
-    :return:
     """
 
     try:
         # 使用 npm list -g --depth=0 查询appium字样是否存在(存在则表明安装了appium)
         # C:\Users\huilin.xu\AppData\Roaming\npm
         # `-- appium@1.22.3
+        tmp_print('正在查询npm列表...')
         appium_infos = subprocess.getoutput('npm list -g --depth=0')
         if 'appium@' not in appium_infos:
             tip = 'x appium 未安装'
@@ -148,9 +148,11 @@ def check_appium():
 
         # 如果路径存在(带appium字样)
         else:
+            tmp_print('正在检查appium版本...')
             match = re.search(r'appium@([\d.]+)', appium_infos)
             if match:
                 # 得到appium版本
+                tmp_print('正在获取appium版本...')
                 appium_v = match.group(1)
                 # 判断版本是否为1.22.3版本
                 if appium_target in appium_v or appium_v in appium_target:

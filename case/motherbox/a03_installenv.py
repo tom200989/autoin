@@ -210,7 +210,6 @@ def __reinstall_node(direct_install=False):
         return False
 
 def __reinstall_appium(direct_install=False):
-    # todo 2023/9/26
     """
     重装appium
     :param direct_install:  是否直接安装, 默认为False, 即先卸载再安装
@@ -225,7 +224,8 @@ def __reinstall_appium(direct_install=False):
     if not direct_install:
         tmp_print('正在卸载 Appium...')
         try:
-            subprocess.run('npm uninstall appium -g ', shell=True)
+            tmp_print('执行指令: npm uninstall appium -g')
+            subprocess.run('npm uninstall appium -g', shell=True)
         except Exception as e:
             tmp_print(f'卸载Appium失败: {e}')
             return False
@@ -234,13 +234,18 @@ def __reinstall_appium(direct_install=False):
 
     # 安装
     tmp_print('正在安装 Appium...')
-    install_cmd = 'npm --registry http://registry.npm.taobao.org install appium@1.22.3 -g --no-optional --verbose --no-audit --no-fund'
+    install_cmd = 'npm --registry http://registry.npm.taobao.org install appium@1.22.3 -g --no-optional --no-audit --no-fund'
     tmp_print(install_cmd)
     try:
         # 执行安装
         subprocess.run(install_cmd, shell=True, check=True)
         time.sleep(5)
-        tmp_print('Appium 安装完成')
+        appium_v = 'unknown(未能获取安装后的版本)'
+        appium_infos = subprocess.getoutput('npm list -g --depth=0')
+        if 'appium@' in appium_infos:
+            match = re.search(r'appium@([\d.]+)', appium_infos)
+            if match: appium_v = match.group(1)
+        tmp_print(f'Appium 安装完成, 当前版本为: {appium_v}')
         return True
     except Exception as e:
         tmp_print(f'安装Appium失败: {e}')
@@ -434,10 +439,13 @@ def _install_appium():
 
     appium_state, appium_tip, appium_type = check_appium()
 
+    # todo 2023/9/27 测试流程
+    appium_state = False
+    appium_type = APPIUM_NOT_TARGET_VERSION
 
     if not appium_state:  # 不符合要求
         if appium_type == APPIUM_HAD_INSTALL:
-            tmp_print('appium已安装且符合要求, 无需重装')
+            tmp_print('√ appium已安装且符合要求, 无需重装')
             return True
         elif appium_type == APPIUM_NOT_INSTALL:
             tmp_print('appium未安装, 准备开始安装...')
@@ -449,7 +457,7 @@ def _install_appium():
             tmp_print('检测appium版本出错, 即将重新安装...')
             __reinstall_appium()  # 先卸载再安装
     else:  # 符合要求
-        tmp_print('appium已安装且符合要求, 无需重装')
+        tmp_print('√ appium已安装且符合要求, 无需重装')
         return True
 
 _install_appium()
