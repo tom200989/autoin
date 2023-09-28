@@ -27,7 +27,7 @@ project_paths = {  #
 }
 
 # 临时文件夹(用于存入打包后的文件) - 注意, 此处修改需要同步修改setup.py中的同名变量
-temp_folder = r'D:\autoin_tmp'
+temp_folder = r'D:\autocase_tmp'
 
 def __upload_minio(*args):
     minio_motherbox_x, motherbox_zip, minio_boxhelper_x, boxhelper_zip = args

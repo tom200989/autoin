@@ -21,9 +21,7 @@ build_options = {  #
     "include_files": [  #
         # (r'D:\project\python\autouim\ef_app_autotest\temp\minio_upload\tmp_tools.py', 'tmp_tools.py') #
     ],  # 需要包含的其他文件
-    'build_exe': {
-        'build_exe': temp_folder,  # 输出到临时文件夹
-    }
+    'build_exe': temp_folder,  # 输出到临时文件夹
 }
 
 # 创建setup
