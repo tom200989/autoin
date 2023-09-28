@@ -1,3 +1,13 @@
+from __future__ import print_function
+import os
+import sys
+import ctypes
+if sys.version_info[0] == 3:
+    import winreg as winreg
+else:
+    import _winreg as winreg
+
+import ctypes
 import datetime
 import inspect
 import os
@@ -7,13 +17,20 @@ import stat
 import subprocess
 import sys
 import time
-
+import winreg
 import psutil
 import winapps
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
 from concurrent.futures import ProcessPoolExecutor, TimeoutError
+
+CMD                   = r"C:\Windows\System32\cmd.exe"
+FOD_HELPER            = r'C:\Windows\System32\fodhelper.exe'
+PYTHON_CMD            = "python"
+REG_PATH              = 'Software\Classes\ms-settings\shell\open\command'
+DELEGATE_EXEC_REG_KEY = 'DelegateExecute'
+
 
 motherbox_version = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
@@ -25,11 +42,16 @@ jdk_dir = root_dir + '/jdk'  # jdk目录
 gradle_dir = root_dir + '/gradle'  # gradle目录
 nodejs_dir = root_dir + '/nodejs'  # nodejs目录
 driver_dir = root_dir + '/driver'  # driver目录
+sys_env_dir = root_dir + '/sys_env'  # 系统环境变量缓存目录
+sys_env_txt = sys_env_dir + '/sys_env.txt'  # 系统环境变量缓存文件
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
+
+# ndk的版本(固定)
+ndk_target = '25.1.8937393'
 
 # node.js的版本(固定)
 node_target = '16.18.1'
-minio_nodejs= 'autocase/android/env/nodejs/nodejs.zip'  # nodejs.zip的路径
+minio_nodejs = 'autocase/android/env/nodejs/nodejs.zip'  # nodejs.zip的路径
 
 # appium的版本(固定)
 appium_target = '1.22.3'
@@ -65,6 +87,10 @@ target_driver = {  # 当前自动化脚本所需要的驱动
     'ch343ser.inf': '该驱动用于读取芯片日志',  #
     'slabvcp.inf': '该驱动用于控制继电器',  #
 }  #
+
+# 环境变量注册表
+env_reg = r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
+default_chrome = r'C:\Program Files\Google\Chrome\Application'  # 默认chrome安装目录
 
 def is_dir_exits_above_100mb(folder_path):
     """
@@ -260,10 +286,195 @@ def check_exe(target_exe):
                 # 文件名, 安装路径, 版本, 卸载命令
                 exe_name = ex.name
                 exe_install_path = str(ex.install_location)
-                if exe_install_path == '' or exe_install_path is None:exe_install_path = str(ex.install_source)
+                if exe_install_path == '' or exe_install_path is None: exe_install_path = str(ex.install_source)
                 exe_version = ex.version
                 exe_uninstall_string = ex.uninstall_string
                 return_info = [exe_name, exe_install_path, exe_version, exe_uninstall_string]
                 return return_info
 
     return []
+
+def get_exe_install_path(target_exe):
+    """
+    获取exe安装路径
+    :return: exe安装路径
+    """
+    try:
+        # 获取chrome安装路径
+        exe = [app.name for app in winapps.search_installed(target_exe)]
+        if exe and len(exe) > 0:
+            target_exe = target_exe.lower()
+            for ex in winapps.list_installed():
+                exe_name = str(ex.name).lower()
+                if exe_name in target_exe or target_exe in exe_name:
+                    exe_install_path = str(ex.install_location)
+                    if exe_install_path == '' or exe_install_path is None:
+                        exe_install_path = str(ex.install_source)
+                    return exe_install_path
+        return None
+    except Exception as e:
+        tmp_print(f'获取{target_exe}安装路径失败, {e}')
+        return None
+
+def need_env_paths(chrome_install_path=default_chrome):
+    """
+    需要配置的环境变量路径
+    :param chrome_install_path: chrome安装路径(动态变化)
+    :return:  需要配置的环境变量路径列表
+    """
+    if chrome_install_path is None: chrome_install_path = default_chrome
+    # SDK路径
+    test_sdk_home = sdk_dir
+    test_sdk_buildtools_path = os.path.join(test_sdk_home, 'build-tools')
+    test_ndk_path = os.path.join(test_sdk_home, 'ndk')
+    test_ndk_25_path = os.path.join(test_ndk_path, ndk_target)
+    test_platforms_path = os.path.join(test_sdk_home, 'platforms')
+    test_platform_tools_path = os.path.join(test_sdk_home, 'platform-tools')
+    test_tools_bin_path = os.path.join(test_sdk_home, 'tools', 'bin')
+
+    # JDK路径
+    test_jdk_home = jdk_dir
+    test_jdk_bin_path = os.path.join(test_jdk_home, 'bin')
+
+    # chrome-application路径
+    test_chrome_home = chrome_install_path  # 这个是动态变化
+
+    # gradle/bin路径
+    test_gradle_home = gradle_dir
+    test_gradle_bin_path = os.path.join(test_gradle_home, 'bin')
+
+    # 测试路径列表
+    test_paths = [  # sdk
+        test_sdk_home,  # /sdk
+        test_sdk_buildtools_path,  # /sdk/build-tools
+        test_ndk_path,  # /ndk
+        test_ndk_25_path,  # /ndk/25.1.8937393
+        test_platforms_path,  # /platforms
+        test_platform_tools_path,  # /platform-tools
+        test_tools_bin_path,  # /tools/bin
+        # jdk
+        test_jdk_home,  # /jdk
+        test_jdk_bin_path,  # /jdk/bin
+        # chrome
+        test_chrome_home,  # /chrome
+        # gradle
+        test_gradle_home,  # /gradle
+        test_gradle_bin_path,  # /gradle/bin
+    ]
+    # 替换斜杠
+    corrected_paths = [path.replace("/", "\\").replace("\\\\", "\\") for path in test_paths]
+    return corrected_paths
+
+def get_cur_envs():
+    """
+    获取当前环境变量
+    """
+    try:
+        # 打开注册表，获取环境变量
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg) as key:
+            original_path = winreg.QueryValueEx(key, 'Path')[0]
+        return original_path
+    except Exception as e:
+        tmp_print(f'获取当前环境变量失败, {e}')
+        return None
+
+def backup_envs():
+    """
+    备份当前环境变量
+    """
+    try:
+        # 创建目录
+        tmp_print('正在备份环境变量...')
+        if not os.path.exists(os.path.dirname(sys_env_txt)):
+            os.makedirs(os.path.dirname(sys_env_txt))
+        # 打开注册表，获取环境变量
+        tmp_print('正在获取环境变量...')
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg) as key:
+            original_path = winreg.QueryValueEx(key, 'Path')[0]
+        # 备份到文件
+        tmp_print('正在备份环境变量到文件...')
+        with open(sys_env_txt, 'w') as file:
+            file.write(original_path)
+        tmp_print(f'环境变量备份完成: {sys_env_txt}')
+        return True
+    except Exception as e:
+        tmp_print(f'环境变量备份失败, {e}')
+        return False
+
+def add_need_envs():
+    """
+    在原有环境变量前添加新路径
+    """
+    try:
+        tmp_print('正在添加环境变量...')
+        # 需要配置的环境变量路径
+        test_paths = need_env_paths(get_exe_install_path('chrome.exe'))
+        tmp_print(f'正在配置所需的环境变量...')
+        # 打开注册表，获取环境变量
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_SET_VALUE) as key:
+            original_path = winreg.QueryValueEx(key, 'Path')[0]
+            # 把新路径添加到原始路径前面
+            new_path = ';'.join(test_paths) + ';' + original_path
+            # 更新环境变量
+            winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, new_path)
+            winreg.CloseKey(key)
+        tmp_print('环境变量配置完成。')
+        return False
+    except Exception as e:
+        tmp_print(f'环境变量配置失败, {e}')
+        return False
+
+def restore_envs():
+    """
+    从备份文件还原环境变量
+    """
+    try:
+        if not os.path.exists(sys_env_txt):
+            tmp_print('备份文件不存在，无法还原。')
+            return
+        tmp_print('正在还原环境变量...')
+        # 从备份文件中读取环境变量
+        with open(sys_env_txt, 'r') as file:
+            original_path = file.read()
+        tmp_print('正在还原环境变量到注册表...')
+        # 打开注册表，设置环境变量
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_SET_VALUE) as key:
+            winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, original_path)
+        tmp_print(f'环境变量已从 <{sys_env_txt}> 还原')
+        return True
+    except Exception as e:
+        tmp_print(f'环境变量还原失败, {e}')
+        return False
+
+def is_admin():
+    """
+    判断是否有管理员权限
+    """
+    try:
+        tmp_print('正在判断是否有管理员权限...')
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except Exception as e:
+        tmp_print(f'判断管理员权限失败, {e}')
+        return False
+
+def create_reg_key(key, value):
+    """
+    Creates a reg key
+    """
+    try:
+        winreg.CreateKey(winreg.HKEY_CURRENT_USER, REG_PATH)
+        registry_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH, 0, winreg.KEY_WRITE)
+        winreg.SetValueEx(registry_key, key, 0, winreg.REG_SZ, value)
+        winreg.CloseKey(registry_key)
+    except WindowsError:
+        raise
+
+def bypass_uac(cmd):
+    """
+    Tries to bypass the UAC
+    """
+    try:
+        create_reg_key(DELEGATE_EXEC_REG_KEY, '')
+        create_reg_key(None, cmd)
+    except WindowsError:
+        raise

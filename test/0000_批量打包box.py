@@ -45,7 +45,7 @@ def __need_version():
     自动从minio获取版本号并自增+1
     :return:
     """
-    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True,http_client=urllib3.PoolManager(timeout=2))
+    client = Minio(endpoint, access_key=access_key, secret_key=secret_key, secure=True, http_client=urllib3.PoolManager(timeout=2))
     objects = client.list_objects(bucket_name, prefix=minio_motherbox_root, recursive=True)
     versions = []
     for obj in objects:
@@ -93,15 +93,20 @@ def pack():
                 shutil.rmtree(build_path, onerror=del_rw)
                 print('build文件夹已删除')
 
-            print('开始打包...')
-            # 执行打包命令
-            result = subprocess.run(['python', 'setup.py', 'build'], check=True)
-
-            # 打印结果
-            if result.returncode == 0:
-                print(f'{project_path} 打包成功！')
+            if os.path.exists(build_path) and os.path.isdir(build_path):
+                print('build文件夹删除失败, 请手动删除后重试!')
+                break
             else:
-                print(f'{project_path} 打包失败！返回码：{result.returncode}')
+                print('开始打包...')
+                # 执行打包命令
+                result = subprocess.run(['python', 'setup.py', 'build'], check=True)
+
+                # 打印结果
+                if result.returncode == 0:
+                    print(f'{project_path} 打包成功！')
+                else:
+                    print(f'{project_path} 打包失败！返回码：{result.returncode}')
+
 
         except Exception as e:
             print(f'在项目 {project_path} 打包时出错：{e}')
@@ -157,8 +162,4 @@ def zip_upload():
 """ ----------------------------------------------- pack ----------------------------------------------- """
 
 # 执行打包
-pack()
-# 执行压缩并上传
-# zip_upload()
-
-
+pack()  # 执行压缩并上传  # zip_upload()

@@ -1,2 +1,3 @@
 import os
-print(os.getenv('path'))
+sys_path = os.getenv('path')
+print(sys_path)

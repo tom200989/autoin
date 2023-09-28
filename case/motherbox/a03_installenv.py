@@ -571,18 +571,27 @@ def _install_driver(retry=0):
                     is_un = _uninstall_driver(list(target_driver.keys()))
                     if is_un:
                         return _install_driver(retry + 1)  # 如果卸载成功, 则再次安装
-                    else:
-                        tmp_print('x 驱动重试失败, 不再重试, 请人工检查')
-                        return False
-                else:
-                    tmp_print('x 驱动安装失败, 不再重试, 请人工检查')
-                    return False
+
+                tmp_print('x 驱动重试失败, 不再重试, 请人工检查')
+                return False
         else:
             tmp_print('√ 所需驱动全部已安装')
             return True
     except Exception as e:
         tmp_print(f'安装驱动失败, 发生错误: {e}')
         return False
+
+def _config_sys_env():
+    # todo 2023/9/27 配置系统环境变量
+    # 先备份当前的系统环境变量
+    is_backup_env = backup_envs()
+    if not is_backup_env: return False
+    # 配置系统环境变量
+    is_add_env = add_need_envs()
+    if not is_add_env: return False
+    # todo 2023/9/28 获取当前的系统环境变量
+    print(get_cur_envs())
+
 
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """
 
@@ -595,7 +604,7 @@ def install_envs():
     if not _install_nodejs(): return
     # 安装appium
     if not _install_appium(): return
-
-if __name__ == '__main__':
-    # check_nodejs()
-    pass
+    # 安装驱动
+    if not _install_driver(): return
+    # 配置系统环境变量
+    if not _config_sys_env(): return

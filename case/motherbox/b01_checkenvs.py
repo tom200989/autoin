@@ -183,7 +183,7 @@ def check_driver(drivers=None):
     ch343ser: 芯片日志驱动
     slabvcp: 继电器驱动
     """
-    if not drivers:drivers = target_driver
+    if not drivers: drivers = target_driver
     command = ['PnPUtil', '/enum-drivers']
     process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
@@ -208,30 +208,22 @@ def check_driver(drivers=None):
             tmp_print('驱动检查通过')
             return True, '驱动检查通过', []
 
-def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/Application'):
+def check_system_envpath(chrome_install_path=default_chrome):
     """
     检查系统环境变量中是否配置的是压测的路径
     """
+    if chrome_install_path is None: chrome_install_path = default_chrome
     # 获取当前环境变量
     system_env_path = os.getenv('path')
-    # SDK路径
-    test_sdk_home = sdk_dir
-    test_platforms_path = os.path.join(test_sdk_home, 'platforms')
-    test_platform_tools_path = os.path.join(test_sdk_home, 'platform-tools')
-    test_ndk_path = os.path.join(root_dir, 'ndk')
-    # JDK路径
-    test_jdk_home = jdk_dir
-    test_jdk_bin_path = os.path.join(test_jdk_home, 'bin')
-    # chrome-application路径
-    test_chrome_home = chrome_install_path
-
     # 切割获取到的环境变量
     path_list = system_env_path.split(';')
-    test_paths = [test_platforms_path, test_platform_tools_path, test_ndk_path, test_jdk_bin_path, test_chrome_home]
-
-    # 检查环境变量中是否包含压测的路径
-    if all(test_path in path_list for test_path in test_paths):
-        # 检查环境变量中压测的路径是否在正确的位置(靠前面的位置)
+    # 需要配置的环境变量路径
+    test_paths = need_env_paths(chrome_install_path)
+    # 检查哪些路径不存在
+    missing_paths = [test_path for test_path in test_paths if test_path not in path_list]
+    # 如果路径没有缺失
+    if len(missing_paths) == 0:
+        # 检查路径位置
         indices = [path_list.index(test_path) for test_path in test_paths]
         if all(index < len(test_paths) for index in indices):
             tmp_print('√ 压测编译环境变量配置正确')
@@ -241,7 +233,10 @@ def check_system_envpath(chrome_install_path='C:/Program Files/Google/Chrome/App
             return False, '压测编译环境变量配置异常(未处于优先位置)'
     else:
         tmp_print('x 压测编译环境变量不全')
-        return False, '压测编译环境变量不全'
+        tmp_print(f'缺少以下环境变量: ')
+        for miss_path in missing_paths:
+            tmp_print(f'x {miss_path}')
+        return False, f'压测编译环境变量不全，缺少：{", ".join(missing_paths)}'
 
 # ---------------------------------------------- 检测全部环境 ----------------------------------------------
 def check_all_sys():
