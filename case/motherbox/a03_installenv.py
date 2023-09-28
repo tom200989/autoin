@@ -606,3 +606,10 @@ def install_envs():
     if not _install_driver(): return
     # 配置系统环境变量
     if not _config_sys_env(): return
+
+    # todo 2023/9/28 节后回来调试整个安装环境的全流程
+    # 1. 把所有的所需软件(chrome, chromedriver)全部卸载
+    # 2. 把所有工程目录下的sdk, jdk , gradle 目录全部删除
+    # 3. 卸载nodejs / appium / driver /
+    # 4. 环境变量全部还原为初始状态
+    # 5. 然后开始一键安装
