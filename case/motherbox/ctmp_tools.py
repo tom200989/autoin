@@ -442,6 +442,10 @@ def restore_envs():
             winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, original_path)
         tmp_print(f'环境变量已从 <{sys_env_txt}> 还原')
         tmp_print(get_cur_envs())
+
+        tmp_print('环境变量还原完毕, 5秒后重启电脑...(请勿操作)')
+        time.sleep(3)
+        os.system('shutdown -r -t 0')
         return True
     except Exception as e:
         tmp_print(f'环境变量还原失败, {e}')

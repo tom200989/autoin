@@ -438,11 +438,6 @@ def _install_appium():
         return False
 
     appium_state, appium_tip, appium_type = check_appium()
-
-    # todo 2023/9/27 测试流程
-    appium_state = False
-    appium_type = APPIUM_NOT_TARGET_VERSION
-
     if not appium_state:  # 不符合要求
         if appium_type == APPIUM_HAD_INSTALL:
             tmp_print('√ appium已安装且符合要求, 无需重装')
@@ -582,13 +577,19 @@ def _install_driver(retry=0):
         return False
 
 def _config_sys_env():
+    """
+    配置系统环境变量
+    """
     # 先备份当前的系统环境变量
     is_backup_env = backup_envs()
     if not is_backup_env: return False
     # 配置系统环境变量
     is_add_env = add_need_envs()
     if not is_add_env: return False
-
+    # 重启电脑
+    tmp_print('环境变量配置完毕, 5秒后重启电脑...(请勿操作)')
+    time.sleep(3)
+    os.system('shutdown -r -t 0')
 
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """
 
