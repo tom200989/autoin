@@ -1,7 +1,9 @@
+import platform
 import shutil
 import stat
 import subprocess
 import os
+import sys
 import time
 import tempfile
 

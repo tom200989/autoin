@@ -1,10 +1,22 @@
+import platform
 import sys
 sys.path.append(r'D:\project\python\autoin\venv\Lib\site-packages')  # 这句话一定要加(路径是安装cz_freeze时的python路径)
 from cx_Freeze import setup, Executable
 from zboxtools import boxhelper_version
 
+def get_pack_dirname():
+    """
+    获取打包后的目录名(exe.win-amd64-3.11)
+    """
+    platform_name = platform.system().lower()
+    if 'win' in platform_name: platform_name = 'win'
+    architecture = platform.machine().lower()
+    python_version = f"{sys.version_info.major}.{sys.version_info.minor}"
+    directory_name = f"exe.{platform_name}-{architecture}-{python_version}"
+    return directory_name
+
 # 临时文件夹
-temp_folder = r'D:\autocase_tmp\build'
+temp_folder = rf'D:\autocase_tmp\build\{get_pack_dirname()}'
 
 # 可执行文件的信息
 executables = [Executable(r"D:\project\python\autoin\case\boxhelper\a00_boxhelper.py")]
