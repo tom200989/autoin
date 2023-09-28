@@ -3,6 +3,9 @@ sys.path.append(r'D:\project\python\autoin\venv\Lib\site-packages')  # 这句话
 from cx_Freeze import setup, Executable
 from zboxtools import boxhelper_version
 
+# 临时文件夹
+temp_folder = r'D:\autocase_tmp\build'
+
 # 可执行文件的信息
 executables = [Executable(r"D:\project\python\autoin\case\boxhelper\a00_boxhelper.py")]
 # 构建选项
@@ -17,7 +20,10 @@ build_options = {  #
     "excludes": [],  # 需要排除的包
     "include_files": [  #
         # (r'D:\project\python\autouim\ef_app_autotest\temp\minio_upload\tmp_tools.py', 'tmp_tools.py') #
-    ]  # 需要包含的其他文件
+    ],  # 需要包含的其他文件
+    'build_exe': {
+        'build_exe': temp_folder,  # 输出到临时文件夹
+    }
 }
 
 # 创建setup
