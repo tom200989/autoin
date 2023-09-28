@@ -6,6 +6,8 @@ base = None
 if sys.platform == 'win32':
     base = 'Win32GUI' # 无窗口程序
 
+temp_folder = r'D:\lock_tmp\build'
+
 # 可执行文件的信息
 executables = [Executable(r"D:\project\python\autoin\demo\lockscreen\lockscreen.py")]
 # 构建选项
@@ -20,7 +22,8 @@ build_options = {  #
 
     "excludes": [],  # 需要排除的包
     "include_files": [  #
-        (r'D:\project\python\autoin\demo\lockscreen\lock.png', 'lock.png')]  # 需要包含的其他文件
+        (r'D:\project\python\autoin\demo\lockscreen\lock.png', 'lock.png')],  # 需要包含的其他文件
+    'build_exe': temp_folder,  # 输出到临时文件夹 (此处修改是需要同步修改0000_批量打包lock.py中的同名变量)
 }
 
 # 创建setup

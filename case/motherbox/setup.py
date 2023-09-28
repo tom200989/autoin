@@ -33,16 +33,16 @@ build_options = {  #
     "packages": [  #
         'shutil', 'psutil',  # a02_updatebox.py
         'subprocess', 'requests', 're',  # b00_checknet.py
-        'winapps', 'plumbum', # b01_checkenvs.py
-        'minio','platform',  # cminio_tools.py
-        'datetime', 'inspect', 'os', 'socket', 'stat', 'sys', 'time','prompt_toolkit'  # ctmp_tools.py
+        'winapps', 'plumbum',  # b01_checkenvs.py
+        'minio', 'platform',  # cminio_tools.py
+        'datetime', 'inspect', 'os', 'socket', 'stat', 'sys', 'time', 'prompt_toolkit'  # ctmp_tools.py
     ],  # 全部需要导入的包
 
     "excludes": [],  # 需要排除的包
-    "include_files": [#
+    "include_files": [  #
         # (r'D:\project\python\autouim\ef_app_autotest\temp\minio_upload\tmp_tools.py', 'tmp_tools.py') #
     ],  # 需要包含的其他文件
-    'build_exe': temp_folder,  # 输出到临时文件夹
+    'build_exe': temp_folder,  # 输出到临时文件夹 (此处修改是需要同步修改0000_批量打包box.py中的同名变量)
 }
 
 # 创建setup
