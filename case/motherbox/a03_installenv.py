@@ -582,15 +582,12 @@ def _install_driver(retry=0):
         return False
 
 def _config_sys_env():
-    # todo 2023/9/27 配置系统环境变量
     # 先备份当前的系统环境变量
     is_backup_env = backup_envs()
     if not is_backup_env: return False
     # 配置系统环境变量
     is_add_env = add_need_envs()
     if not is_add_env: return False
-    # todo 2023/9/28 获取当前的系统环境变量
-    print(get_cur_envs())
 
 
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """

@@ -411,15 +411,15 @@ def add_need_envs():
         test_paths = need_env_paths(get_exe_install_path('chrome.exe'))
         tmp_print(f'正在配置所需的环境变量...')
         # 打开注册表，获取环境变量
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_SET_VALUE) as key:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_READ | winreg.KEY_WRITE) as key:
             original_path = winreg.QueryValueEx(key, 'Path')[0]
             # 把新路径添加到原始路径前面
             new_path = ';'.join(test_paths) + ';' + original_path
-            # 更新环境变量
+            # # 更新环境变量
             winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, new_path)
             winreg.CloseKey(key)
         tmp_print('环境变量配置完成。')
-        return False
+        return True
     except Exception as e:
         tmp_print(f'环境变量配置失败, {e}')
         return False
@@ -438,9 +438,10 @@ def restore_envs():
             original_path = file.read()
         tmp_print('正在还原环境变量到注册表...')
         # 打开注册表，设置环境变量
-        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_SET_VALUE) as key:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_READ | winreg.KEY_WRITE) as key:
             winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, original_path)
         tmp_print(f'环境变量已从 <{sys_env_txt}> 还原')
+        tmp_print(get_cur_envs())
         return True
     except Exception as e:
         tmp_print(f'环境变量还原失败, {e}')
