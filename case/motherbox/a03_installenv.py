@@ -733,17 +733,20 @@ def install_envs():
     if not _add_sys_envs(): return
 
 def uninstall_envs():
+    """
+    注意: 以下步骤必须如下.
+    """
     # 1. 把所有的所需软件(chrome, chromedriver)全部卸载
     if not _uninstall_chrome():
         tmp_print('x 卸载chrome失败, 进程停止')
         return
-    # 2. 卸载nodejs
-    if not _uninstall_nodejs():
-        tmp_print('x 卸载nodejs失败, 进程停止')
-        return
-    # 3. 卸载appium
+    # 2. 卸载appium
     if not _uninstall_appium():
         tmp_print('x 卸载appium失败, 进程停止')
+        return
+    # 3. 卸载nodejs
+    if not _uninstall_nodejs():
+        tmp_print('x 卸载nodejs失败, 进程停止')
         return
     # 4. 卸载驱动
     if not _uninstall_driver(list(target_driver.keys())):
@@ -760,6 +763,6 @@ def uninstall_envs():
 
     tmp_print('='*30, '>>> 卸载操作结束','='*30)
 
-# install_envs()
+install_envs()
 # uninstall_envs()
 pass
