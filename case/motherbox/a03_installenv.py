@@ -286,10 +286,9 @@ def _uninstall_chrome(chrome_infos=None):
         tmp_print(f"卸载chrome失败, 发生错误: {e}")
         return False
 
-def _uninstall_sdk_jdk_gradle(is_restore_env=False):
+def _uninstall_sdk_jdk_gradle():
     """
     直接删除autocase总目录
-    :param is_restore_env: 是否还原环境变量(要求先还原环境变量, 再删除autocase总目录)
     """
     tmp_print('='*30, '>>> 开始卸载压测目录...','='*30)
     if os.path.exists(root_dir):
@@ -299,7 +298,7 @@ def _uninstall_sdk_jdk_gradle(is_restore_env=False):
                     shutil.rmtree(cdir, onerror=del_rw)
                     tmp_print(f'{cdir}删除成功')
                 except Exception as e:
-                    tmp_print(f'{cdir}删除失败, 发生错误: {e}')
+                    tmp_print(f'x {cdir}删除失败, 发生错误: {e}')
             else:
                 tmp_print(f'{cdir}不存在, 无需删除')
         tmp_print('全部压测目录删除完成')
@@ -754,10 +753,13 @@ def uninstall_envs():
     _restore_envs_result = _restore_sys_envs()
     # 6. (还原好系统环境前提下)把所有工程目录下的sdk, jdk , gradle 等目录全部删除
     if not _restore_envs_result:
-        tmp_print('x 还原环境变量失败, 进程停止')
-        return
+        tmp_print('x 还原系统环境变量失败, 请手动检查')
+    else:
+        tmp_print('√ 还原系统环境变量完成')
     _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
-    tmp_print('压测环境还原成功')
+
+    tmp_print('='*30, '>>> 卸载操作结束','='*30)
 
 # install_envs()
-uninstall_envs()
+# uninstall_envs()
+pass
