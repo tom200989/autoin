@@ -293,7 +293,7 @@ def check_exe(target_exe):
                 return_info = [exe_name, exe_install_path, exe_version, exe_uninstall_string]
                 return return_info
 
-    return []
+    return None
 
 def get_exe_install_path(target_exe):
     """

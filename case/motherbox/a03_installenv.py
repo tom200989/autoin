@@ -12,7 +12,7 @@ def __checkdown_chromedriver():
     :return:
     """
     chrome_state, chrome_infos, chrome_tip, chrome_version_state = check_chrome()
-    if len(chrome_infos) > 0:
+    if chrome_infos is not None:
         # 获取chrome版本(如117)和安装路径
         chrome_v = str(chrome_infos[2]).split('.')[0]
         chrome_install_dir = str(chrome_infos[1])
@@ -107,7 +107,7 @@ def __reinstall_chrome(chrome_infos=None):
         # 再重新创建ChromeSetup目录
         os.makedirs(chromesetup_dir)
         # 如果传入了chrome_infos(说明原先已安装), 则先卸载
-        if len(chrome_infos) > 0:
+        if chrome_infos is not None:
             uninst_state = _uninstall_chrome(chrome_infos)
             if not uninst_state: return False
         # 从Minio下载chrome安装包
@@ -245,7 +245,7 @@ def _uninstall_chrome(chrome_infos=None):
 
     # 如果外部传入的infos为空(一键卸载), 则内部自己检查
     try:
-        tmp_print('>>> 开始卸载Chrome...')
+        tmp_print('='*30, '>>> 开始卸载Chrome...','='*30, )
         # 结束chrome进程
         tmp_print('正在关闭chrome...')
         kill_exe('chrome.exe')
@@ -254,7 +254,7 @@ def _uninstall_chrome(chrome_infos=None):
         if chrome_infos is None:
             chrome_state, chrome_infos, chrome_tip, chrome_version_state = check_chrome()
 
-        if len(chrome_infos) > 0:
+        if chrome_infos is not None:
             # 开始卸载
             tmp_print('正在卸载chrome...')
             # 在chrome_infos中查找卸载命令
@@ -286,6 +286,7 @@ def _uninstall_sdk_jdk_gradle(is_restore_env=False):
     直接删除autocase总目录
     :param is_restore_env: 是否还原环境变量(要求先还原环境变量, 再删除autocase总目录)
     """
+    tmp_print('='*30, '>>> 开始卸载压测目录...','='*30)
     if os.path.exists(root_dir):
         for cdir in uninst_dirs:
             if os.path.exists(str(cdir)):
@@ -308,7 +309,7 @@ def _uninstall_nodejs(node_infos=None):
     :param node_infos: 外部传入的nodejs安装信息(复用)
     """
     try:
-        tmp_print('>>> 开始卸载Nodejs...')
+        tmp_print('='*30, '>>> 开始卸载Nodejs...','='*30)
         # 结束node进程
         tmp_print('正在关闭node...')
         kill_exe('node.exe')
@@ -342,7 +343,8 @@ def _uninstall_appium():
     卸载appium
     """
     try:
-        tmp_print('>>> 开始卸载Appium...')
+        tmp_print('='*30,'>>> 开始卸载Appium...','='*30)
+
         # 关闭appium
         tmp_print('正在关闭appium...')
         port_infos = check_port()  # info = [occupy, str(result), port, int(pid)]
@@ -369,6 +371,7 @@ def _uninstall_driver(driver_names):
     卸载驱动
     :param driver_names: 驱动名列表
     """
+    tmp_print('='*30, '>>> 开始卸载驱动...','='*30)
     # 执行PnPUtil命令并获取输出结果
     cmd_output = subprocess.check_output('PnPUtil /enum-drivers', shell=True, text=True)
     # 把多行字符串拆成行列表
@@ -411,6 +414,7 @@ def _uninstall_driver(driver_names):
         return False
 
 def _restore_sys_envs():
+    tmp_print('='*30, '>>> 开始还原系统变量...','='*30)
     return restore_envs()
 
 """ ----------------------------------------------- 安装各步骤 ----------------------------------------------- """
@@ -725,7 +729,6 @@ def install_envs():
     if not _add_sys_envs(): return
 
 def uninstall_envs():
-    # todo 2023/9/28 调试整个安装环境的全流程
     # 1. 把所有的所需软件(chrome, chromedriver)全部卸载
     if not _uninstall_chrome():
         tmp_print('x 卸载chrome失败, 进程停止')
@@ -751,3 +754,4 @@ def uninstall_envs():
     _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
     tmp_print('压测环境还原成功')
 
+install_envs()
