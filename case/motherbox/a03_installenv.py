@@ -1,3 +1,4 @@
+import os
 import shutil
 
 from b00_checknet import *
@@ -11,7 +12,7 @@ def __checkdown_chromedriver():
     :return:
     """
     chrome_state, chrome_infos, chrome_tip, chrome_version_state = check_chrome()
-    if chrome_infos is not None:
+    if len(chrome_infos) > 0:
         # 获取chrome版本(如117)和安装路径
         chrome_v = str(chrome_infos[2]).split('.')[0]
         chrome_install_dir = str(chrome_infos[1])
@@ -87,6 +88,7 @@ def __checkdown_chromedriver():
                     tmp_print(f"已删除 {sub_dir_path} 目录.")
 
             tmp_print('√ chromedriver安装完成')
+            return True
     else:
         tmp_print('x 未安装chrome,请重试')
         return False
@@ -99,22 +101,15 @@ def __reinstall_chrome(chrome_infos=None):
     try:
         # 检查网络是否畅通
         is_network = check_pingnet()
-        if not is_network: return
+        if not is_network: return False
         # 先清空并删除ChromeSetup目录
         if os.path.exists(str(chromesetup_dir)): shutil.rmtree(chromesetup_dir, onerror=del_rw)
         # 再重新创建ChromeSetup目录
         os.makedirs(chromesetup_dir)
         # 如果传入了chrome_infos(说明原先已安装), 则先卸载
-        if chrome_infos is not None:
-            tmp_print('正在卸载chrome...')
-            # 在chrome_infos中查找卸载命令
-            uninstall_cmd = next((str(item) for item in chrome_infos if '--uninstall' in str(item)), None)
-            # 拼接强制卸载参数
-            uninstall_cmd = uninstall_cmd + ' --force-uninstall'
-            tmp_print(uninstall_cmd)
-            # 执行卸载命令, 先卸载
-            subprocess.run(uninstall_cmd, shell=True)
-            time.sleep(5)
+        if len(chrome_infos) > 0:
+            uninst_state = _uninstall_chrome(chrome_infos)
+            if not uninst_state: return False
         # 从Minio下载chrome安装包
         tmp_print('正在下载chrome安装包...')
         chromesetup_path = os.path.join(chromesetup_dir, 'ChromeSetup.zip')
@@ -163,17 +158,8 @@ def __reinstall_node(direct_install=False):
     if not direct_install:
         # 也要先判断下是否需要卸载
         if len(node_infos) > 0:
-            # 先卸载
-            tmp_print('正在卸载 Node.js...')
-            # 在node_infos中查找卸载命令(此处的索引可能会随着项目的迭代而变化)
-            uninstall_cmd = node_infos[3]
-            # 修改指令参数 (把/I修改为/x, 后边跟随/q以静默卸载)
-            uninstall_cmd = uninstall_cmd.replace('/I', '/x').replace('/i', '/x') + ' /q'
-            tmp_print(uninstall_cmd)
-            # 执行卸载命令, 先卸载
-            subprocess.run(uninstall_cmd, shell=True)
-            time.sleep(2)
-            tmp_print('Node.js 卸载完成')
+            uninst_state = _uninstall_nodejs(node_infos)
+            if not uninst_state: return False
 
     # 安装
     # 先清除nodejs目录
@@ -222,15 +208,8 @@ def __reinstall_appium(direct_install=False):
 
     # 卸载
     if not direct_install:
-        tmp_print('正在卸载 Appium...')
-        try:
-            tmp_print('执行指令: npm uninstall appium -g')
-            subprocess.run('npm uninstall appium -g', shell=True)
-        except Exception as e:
-            tmp_print(f'卸载Appium失败: {e}')
-            return False
-        time.sleep(5)
-        tmp_print('Appium 卸载完成')
+        uninst_state = _uninstall_appium()
+        if not uninst_state: return False
 
     # 安装
     tmp_print('正在安装 Appium...')
@@ -251,7 +230,190 @@ def __reinstall_appium(direct_install=False):
         tmp_print(f'安装Appium失败: {e}')
         return False
 
-""" ----------------------------------------------- 各步骤 ----------------------------------------------- """
+""" ----------------------------------------------- 卸载各步骤 ----------------------------------------------- """
+
+def _uninstall_chrome(chrome_infos=None):
+    """
+    卸载chrome
+    :param chrome_infos: 外部传入的chrome安装信息(复用)
+    """
+    # 1.检查chrome安装状态
+    # chrome_state: True 已安装, False 未安装
+    # chrome_infos: chrome的安装信息
+    # chrome_tip: chrome的安装提示
+    # chrome_version_state: chrome版本状态(-1:过低,-2:过高,-3:未安装,-4:已安装)
+
+    # 如果外部传入的infos为空(一键卸载), 则内部自己检查
+    try:
+        tmp_print('>>> 开始卸载Chrome...')
+        # 结束chrome进程
+        tmp_print('正在关闭chrome...')
+        kill_exe('chrome.exe')
+
+        # 这里是提供给重装时复用的判断
+        if chrome_infos is None:
+            chrome_state, chrome_infos, chrome_tip, chrome_version_state = check_chrome()
+
+        if len(chrome_infos) > 0:
+            # 开始卸载
+            tmp_print('正在卸载chrome...')
+            # 在chrome_infos中查找卸载命令
+            uninstall_cmd = next((str(item) for item in chrome_infos if '--uninstall' in str(item)), None)
+            # 拼接强制卸载参数
+            uninstall_cmd = uninstall_cmd + ' --force-uninstall'
+            tmp_print(uninstall_cmd)
+            # 执行卸载命令, 先卸载
+            subprocess.run(uninstall_cmd, shell=True)
+            time.sleep(5)
+            tmp_print('Chrome 卸载完成')
+
+            # 删除chromedriver
+            tmp_print('正在删除chromedriver...')
+            chrome_install_dir = str(chrome_infos[1])  # xx/Application
+            chromedriver_path = os.path.join(chrome_install_dir, 'chromedriver.exe')
+            if os.path.exists(str(chromedriver_path)): os.remove(str(chromedriver_path))
+            tmp_print('chromedriver删除成功')
+            return True
+        else:
+            tmp_print('本PC未检测到chrome, 无需卸载')
+            return True
+    except Exception as e:
+        tmp_print("卸载chrome失败, 发生错误: {e}")
+        return False
+
+def _uninstall_sdk_jdk_gradle(is_restore_env=False):
+    """
+    直接删除autocase总目录
+    :param is_restore_env: 是否还原环境变量(要求先还原环境变量, 再删除autocase总目录)
+    """
+    if os.path.exists(root_dir):
+        for cdir in uninst_dirs:
+            if os.path.exists(str(cdir)):
+                try:
+                    shutil.rmtree(cdir, onerror=del_rw)
+                    tmp_print(f'{cdir}删除成功')
+                except Exception as e:
+                    tmp_print(f'{cdir}删除失败, 发生错误: {e}')
+            else:
+                tmp_print(f'{cdir}不存在, 无需删除')
+        tmp_print('全部压测目录删除完成')
+        return True
+    else:
+        tmp_print('总目录不存在, 无需卸载')
+        return True
+
+def _uninstall_nodejs(node_infos=None):
+    """
+    卸载nodejs
+    :param node_infos: 外部传入的nodejs安装信息(复用)
+    """
+    try:
+        tmp_print('>>> 开始卸载Nodejs...')
+        # 结束node进程
+        tmp_print('正在关闭node...')
+        kill_exe('node.exe')
+
+        # 如果外部传入的infos为空(一键卸载), 则内部自己检查
+        if node_infos is None:
+            node_infos = check_exe('Node.js')
+
+        if len(node_infos) > 0:
+            # 先卸载
+            tmp_print('正在卸载 Node.js...')
+            # 在node_infos中查找卸载命令(此处的索引可能会随着项目的迭代而变化)
+            uninstall_cmd = node_infos[3]
+            # 修改指令参数 (把/I修改为/x, 后边跟随/q以静默卸载)
+            uninstall_cmd = uninstall_cmd.replace('/I', '/x').replace('/i', '/x') + ' /q'
+            tmp_print(uninstall_cmd)
+            # 执行卸载命令, 先卸载
+            subprocess.run(uninstall_cmd, shell=True)
+            time.sleep(2)
+            tmp_print('Node.js 卸载完成')
+            return True
+        else:
+            tmp_print('本PC未检测到Node.js, 无需卸载')
+            return True
+    except Exception as e:
+        tmp_print(f'卸载Node.js失败, 发生错误: {e}')
+        return False
+
+def _uninstall_appium():
+    """
+    卸载appium
+    """
+    try:
+        tmp_print('>>> 开始卸载Appium...')
+        # 关闭appium
+        tmp_print('正在关闭appium...')
+        port_infos = check_port()  # info = [occupy, str(result), port, int(pid)]
+        occupy = port_infos[0]
+        port = port_infos[2]
+        pid = port_infos[3]
+        if occupy: kill_port(port, pid)
+        # 结束node进程
+        tmp_print('正在关闭node...')
+        kill_exe('node.exe')
+        # 开始卸载
+        tmp_print('正在卸载 Appium...')
+        tmp_print('执行指令: npm uninstall appium -g')
+        subprocess.run('npm uninstall appium -g', shell=True)
+        time.sleep(5)
+        tmp_print('Appium 卸载完成')
+        return True
+    except Exception as e:
+        tmp_print(f'卸载Appium失败, 发生错误: {e}')
+        return False
+
+def _uninstall_driver(driver_names):
+    """
+    卸载驱动
+    :param driver_names: 驱动名列表
+    """
+    # 执行PnPUtil命令并获取输出结果
+    cmd_output = subprocess.check_output('PnPUtil /enum-drivers', shell=True, text=True)
+    # 把多行字符串拆成行列表
+    lines = cmd_output.split("\n")
+    for driver_name in driver_names:
+        # 初始化发布名称
+        publish_name = None
+        # 遍历行列表
+        for i, line in enumerate(lines):
+            # 如果找到了目标字符串
+            if f"{driver_name.lower()}" in line.lower():
+                # 取前一行，获取发布名称
+                publish_name = lines[i - 1].split(":")[1].strip()
+                break
+
+        # 输出结果
+        if publish_name:
+            tmp_print(f"找到匹配项，发布名称为: {publish_name}")
+            # 开始卸载
+            subprocess.run(f"PnPUtil /delete-driver {publish_name} /uninstall", shell=True, check=True)
+            tmp_print("卸载成功")
+        else:
+            tmp_print(f"未找到驱动: {driver_name}")
+
+    # 再次检查
+    un_state, un_tip, un_list = check_driver()
+    if un_state:  # 如果还能检查出驱动
+        tmp_print(f'x 驱动卸载失败, {un_list}未卸载干净')
+        return False
+    elif not un_state and not '驱动检查失败' in un_tip:  # 如果状态为False, 且没有`驱动检查失败`的提示 - 就认为卸载成功
+        tmp_print('√ 全部驱动卸载完成')
+        # 删除驱动总目录(D:/autocase/driver)
+        if os.path.exists(str(driver_dir)):
+            tmp_print('正在删除驱动总目录...')
+            shutil.rmtree(driver_dir, onerror=del_rw)
+            tmp_print('√ 驱动总目录删除成功')
+        return True
+    else:
+        tmp_print(f'x 驱动卸载异常')
+        return False
+
+def _restore_sys_envs():
+    return restore_envs()
+
+""" ----------------------------------------------- 安装各步骤 ----------------------------------------------- """
 
 def _install_chrome():
     """
@@ -455,52 +617,6 @@ def _install_appium():
         tmp_print('√ appium已安装且符合要求, 无需重装')
         return True
 
-def _uninstall_driver(driver_names):
-    """
-    卸载驱动
-    :param driver_names: 驱动名列表
-    """
-    # 执行PnPUtil命令并获取输出结果
-    cmd_output = subprocess.check_output('PnPUtil /enum-drivers', shell=True, text=True)
-    # 把多行字符串拆成行列表
-    lines = cmd_output.split("\n")
-    for driver_name in driver_names:
-        # 初始化发布名称
-        publish_name = None
-        # 遍历行列表
-        for i, line in enumerate(lines):
-            # 如果找到了目标字符串
-            if f"{driver_name.lower()}" in line.lower():
-                # 取前一行，获取发布名称
-                publish_name = lines[i - 1].split(":")[1].strip()
-                break
-
-        # 输出结果
-        if publish_name:
-            tmp_print(f"找到匹配项，发布名称为: {publish_name}")
-            # 开始卸载
-            subprocess.run(f"PnPUtil /delete-driver {publish_name} /uninstall", shell=True, check=True)
-            tmp_print("卸载成功")
-        else:
-            tmp_print(f"未找到驱动: {driver_name}")
-
-    # 再次检查
-    un_state, un_tip, un_list = check_driver()
-    if un_state:  # 如果还能检查出驱动
-        tmp_print(f'x 驱动卸载失败, {un_list}未卸载干净')
-        return False
-    elif not un_state and not '驱动检查失败' in un_tip:  # 如果状态为False, 且没有`驱动检查失败`的提示 - 就认为卸载成功
-        tmp_print('√ 全部驱动卸载完成')
-        # 删除驱动总目录(D:/autocase/driver)
-        if os.path.exists(str(driver_dir)):
-            tmp_print('正在删除驱动总目录...')
-            shutil.rmtree(driver_dir, onerror=del_rw)
-            tmp_print('√ 驱动总目录删除成功')
-        return True
-    else:
-        tmp_print(f'x 驱动卸载异常')
-        return False
-
 def _install_driver(retry=0):
     # 检查网络是否正常
     is_network = check_pingnet()
@@ -576,7 +692,7 @@ def _install_driver(retry=0):
         tmp_print(f'安装驱动失败, 发生错误: {e}')
         return False
 
-def _config_sys_env():
+def _add_sys_envs(test_mode=True):
     """
     配置系统环境变量
     """
@@ -587,9 +703,10 @@ def _config_sys_env():
     is_add_env = add_need_envs()
     if not is_add_env: return False
     # 重启电脑
-    tmp_print('环境变量配置完毕, 5秒后重启电脑...(请勿操作)')
-    time.sleep(3)
-    os.system('shutdown -r -t 0')
+    if not test_mode:
+        tmp_print('环境变量配置完毕, 5秒后重启电脑...(请勿操作)')
+        time.sleep(3)
+        os.system('shutdown -r -t 0')
 
 """ ----------------------------------------------- 总流程 ----------------------------------------------- """
 
@@ -605,11 +722,32 @@ def install_envs():
     # 安装驱动
     if not _install_driver(): return
     # 配置系统环境变量
-    if not _config_sys_env(): return
+    if not _add_sys_envs(): return
 
-    # todo 2023/9/28 节后回来调试整个安装环境的全流程
+def uninstall_envs():
+    # todo 2023/9/28 调试整个安装环境的全流程
     # 1. 把所有的所需软件(chrome, chromedriver)全部卸载
-    # 2. 把所有工程目录下的sdk, jdk , gradle 目录全部删除
-    # 3. 卸载nodejs / appium / driver /
-    # 4. 环境变量全部还原为初始状态
-    # 5. 然后开始一键安装
+    if not _uninstall_chrome():
+        tmp_print('x 卸载chrome失败, 进程停止')
+        return
+    # 2. 卸载nodejs
+    if not _uninstall_nodejs():
+        tmp_print('x 卸载nodejs失败, 进程停止')
+        return
+    # 3. 卸载appium
+    if not _uninstall_appium():
+        tmp_print('x 卸载appium失败, 进程停止')
+        return
+    # 4. 卸载驱动
+    if not _uninstall_driver(list(target_driver.keys())):
+        tmp_print('x 卸载驱动失败, 进程停止')
+        return
+    # 5. 环境变量全部还原为初始状态
+    _restore_envs_result = _restore_sys_envs()
+    # 6. (还原好系统环境前提下)把所有工程目录下的sdk, jdk , gradle 等目录全部删除
+    if not _restore_envs_result:
+        tmp_print('x 还原环境变量失败, 进程停止')
+        return
+    _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
+    tmp_print('压测环境还原成功')
+

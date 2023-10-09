@@ -45,6 +45,7 @@ driver_dir = root_dir + '/driver'  # driver目录
 sys_env_dir = root_dir + '/sys_env'  # 系统环境变量缓存目录
 sys_env_txt = sys_env_dir + '/sys_env.txt'  # 系统环境变量缓存文件
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
+uninst_dirs = [chromesetup_dir,sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
 
 # ndk的版本(固定)
 ndk_target = '25.1.8937393'
@@ -424,9 +425,10 @@ def add_need_envs():
         tmp_print(f'环境变量配置失败, {e}')
         return False
 
-def restore_envs():
+def restore_envs(test_mode = True):
     """
     从备份文件还原环境变量
+    :param test_mode: 是否为测试模式(默认为测试模式, 不重启)
     """
     try:
         if not os.path.exists(sys_env_txt):
@@ -443,9 +445,10 @@ def restore_envs():
         tmp_print(f'环境变量已从 <{sys_env_txt}> 还原')
         tmp_print(get_cur_envs())
 
-        tmp_print('环境变量还原完毕, 5秒后重启电脑...(请勿操作)')
-        time.sleep(3)
-        os.system('shutdown -r -t 0')
+        if not test_mode:
+            tmp_print('环境变量还原完毕, 5秒后重启电脑...(请勿操作)')
+            time.sleep(3)
+            os.system('shutdown -r -t 0')
         return True
     except Exception as e:
         tmp_print(f'环境变量还原失败, {e}')
@@ -464,7 +467,7 @@ def is_admin():
 
 def create_reg_key(key, value):
     """
-    Creates a reg key
+    创建注册表键值对
     """
     try:
         winreg.CreateKey(winreg.HKEY_CURRENT_USER, REG_PATH)
@@ -476,10 +479,82 @@ def create_reg_key(key, value):
 
 def bypass_uac(cmd):
     """
-    Tries to bypass the UAC
+    尝试绕过UAC
     """
     try:
         create_reg_key(DELEGATE_EXEC_REG_KEY, '')
         create_reg_key(None, cmd)
     except WindowsError:
         raise
+
+# 检查端口是否被占用
+def check_port(port=4725):
+    """
+    工具: 检测端口是否被引用
+    :param port: 待检测端口
+    :return: info = [False, "unknow", port, "unknow"]
+        occupy: True为被占用
+        result: 状态行信息
+        port: 待检查端口
+        pid: 进程PID
+    """
+    tmp_print(f"开始检查, 端口 = {str(port)}")
+    # 检查端口占用状态
+    result = subprocess.getoutput(f"netstat -ano | findstr {port}")
+    result = result.split("\n")[0]
+    # True 说明此时端口被占用
+    occupy = len(result) > 0
+    tmp_print(f"端口占用情况 {str(occupy)} (if True:被占用)")
+    # 状态行有值 -- 截取PID
+    pid = -1
+    if occupy:
+        if result.__contains__('TIME_WAIT'):  # 如果操作频繁, 端口未能反应, 则先等待
+            tmp_print("操作频繁, 正在等待5秒...")
+            time.sleep(3)  # 建议5秒
+        if result.__contains__('LISTENING'):
+            startIdx = str(result).index('LISTENING') + len('LISTENING')
+            endIdx = len(str(result))
+            pid = result[startIdx:endIdx].strip()
+    info = [occupy, str(result), port, int(pid)]
+    tmp_print(f"查询结果 {info}")
+    return info
+
+# 清理端口
+def kill_port(port, pid):
+    """
+    工具: 手动清理端口
+    :param port: 待清理端口
+    :param pid: 待清理进程PID
+    :return: True: 端口被销毁
+    """
+
+    # 如果外部没有传递PID -- 启动自动查询模式(根据端口查询)
+    if pid == -1:
+        tmp_print(f"未发现pid, 即将根据端口 {str(port)} 查询pid = -1")
+        old_result = subprocess.getoutput(f"netstat -ano | findstr {str(port)}")
+        # 如下可能存在:
+        # TCP    0.0.0.0:4724           0.0.0.0:0              LISTENING       28220
+        # TCP    0.0.0.0:4724           0.0.0.0:0              TIMEWAIT        0
+        result = old_result.split("\n")[0]
+        if len(result) > 0:
+            if result.__contains__('TIME_WAIT'):  # 如果操作频繁, 端口未能反应, 则先等待
+                tmp_print("操作频繁, 正在等待5秒...")
+                time.sleep(3)  # 建议3秒
+            if result.__contains__('LISTENING'):
+                startIdx = str(result).index('LISTENING') + len('LISTENING')
+                endIdx = len(str(result))
+                pid = result[startIdx:endIdx].strip()
+                tmp_print(f"查询到pid = {str(pid)}")
+
+    # 清理指定PID进程
+    tmp_print(f"开始清理, port = {str(port)}, pid = {str(pid)}")
+    os.system(f'taskkill /f /pid {pid}')
+    tmp_print(f"正在核对...")
+    time.sleep(2)  # 建议2秒
+    result = os.system(f'netstat -ano|findstr {str(port)}')
+    is_success = len(str(result)) == 1
+    if is_success:
+        tmp_print("清理成功")
+    else:
+        tmp_print("清理失败")
+    return is_success
