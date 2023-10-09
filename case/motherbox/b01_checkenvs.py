@@ -29,7 +29,7 @@ def check_chrome():
     :return:
     """
     return_info = check_exe('google chrome')
-    if len(return_info) > 0:
+    if return_info is not None:
         # 获取chrome版本
         chrome_version = return_info[2]
         # 查看chrome版本是否小于108
@@ -100,7 +100,7 @@ def check_nodejs():
         else:
             # 再次检查 - 防止中途在外部被卸载
             exe_infos = check_exe('Node.js')
-            if len(exe_infos) > 0:
+            if exe_infos is not None:
                 node_v = exe_infos[2]
                 # 版本匹配(16.18.1)
                 if node_target in node_v or node_v in node_target:

@@ -157,7 +157,7 @@ def __reinstall_node(direct_install=False):
     # 先卸载 (如果不是直接安裝)
     if not direct_install:
         # 也要先判断下是否需要卸载
-        if len(node_infos) > 0:
+        if node_infos is not None:
             uninst_state = _uninstall_nodejs(node_infos)
             if not uninst_state: return False
 
@@ -188,9 +188,14 @@ def __reinstall_node(direct_install=False):
         # 执行静默安装
         subprocess.run(install_command, shell=True, check=True)
         time.sleep(5)
-        new_node_v = check_exe('Node.js')[2]
-        tmp_print(f'成功安装 Node.js({new_node_v})')
-        return True
+        new_infos = check_exe('Node.js')
+        if new_infos is not None:
+            new_node_v = [2]
+            tmp_print(f'成功安装 Node.js({new_node_v})')
+            return True
+        else:
+            tmp_print('x 安装后未检测到Node.js, 安装失败')
+            return False
     except Exception as e:
         tmp_print(f'安装Node.js失败: {e}')
         return False
@@ -278,7 +283,7 @@ def _uninstall_chrome(chrome_infos=None):
             tmp_print('本PC未检测到chrome, 无需卸载')
             return True
     except Exception as e:
-        tmp_print("卸载chrome失败, 发生错误: {e}")
+        tmp_print(f"卸载chrome失败, 发生错误: {e}")
         return False
 
 def _uninstall_sdk_jdk_gradle(is_restore_env=False):
@@ -318,7 +323,7 @@ def _uninstall_nodejs(node_infos=None):
         if node_infos is None:
             node_infos = check_exe('Node.js')
 
-        if len(node_infos) > 0:
+        if node_infos is not None:
             # 先卸载
             tmp_print('正在卸载 Node.js...')
             # 在node_infos中查找卸载命令(此处的索引可能会随着项目的迭代而变化)
@@ -754,4 +759,5 @@ def uninstall_envs():
     _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
     tmp_print('压测环境还原成功')
 
-install_envs()
+# install_envs()
+uninstall_envs()
