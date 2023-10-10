@@ -765,6 +765,6 @@ def uninstall_envs():
 
     tmp_print('=' * 30, '>>> 卸载操作结束', '=' * 30)
 
-install_envs()
+# install_envs()
 # uninstall_envs()
 pass
