@@ -250,7 +250,7 @@ def _uninstall_chrome(chrome_infos=None):
 
     # 如果外部传入的infos为空(一键卸载), 则内部自己检查
     try:
-        tmp_print('='*30, '>>> 开始卸载Chrome...','='*30, )
+        tmp_print('=' * 30, '>>> 开始卸载Chrome...', '=' * 30, )
         # 结束chrome进程
         tmp_print('正在关闭chrome...')
         kill_exe('chrome.exe')
@@ -290,7 +290,7 @@ def _uninstall_sdk_jdk_gradle():
     """
     直接删除autocase总目录
     """
-    tmp_print('='*30, '>>> 开始卸载压测目录...','='*30)
+    tmp_print('=' * 30, '>>> 开始卸载压测目录...', '=' * 30)
     if os.path.exists(root_dir):
         for cdir in uninst_dirs:
             if os.path.exists(str(cdir)):
@@ -313,7 +313,7 @@ def _uninstall_nodejs(node_infos=None):
     :param node_infos: 外部传入的nodejs安装信息(复用)
     """
     try:
-        tmp_print('='*30, '>>> 开始卸载Nodejs...','='*30)
+        tmp_print('=' * 30, '>>> 开始卸载Nodejs...', '=' * 30)
         # 结束node进程
         tmp_print('正在关闭node...')
         kill_exe('node.exe')
@@ -347,7 +347,7 @@ def _uninstall_appium():
     卸载appium
     """
     try:
-        tmp_print('='*30,'>>> 开始卸载Appium...','='*30)
+        tmp_print('=' * 30, '>>> 开始卸载Appium...', '=' * 30)
 
         # 关闭appium
         tmp_print('正在关闭appium...')
@@ -375,7 +375,7 @@ def _uninstall_driver(driver_names):
     卸载驱动
     :param driver_names: 驱动名列表
     """
-    tmp_print('='*30, '>>> 开始卸载驱动...','='*30)
+    tmp_print('=' * 30, '>>> 开始卸载驱动...', '=' * 30)
     # 执行PnPUtil命令并获取输出结果
     cmd_output = subprocess.check_output('PnPUtil /enum-drivers', shell=True, text=True)
     # 把多行字符串拆成行列表
@@ -418,7 +418,7 @@ def _uninstall_driver(driver_names):
         return False
 
 def _restore_sys_envs():
-    tmp_print('='*30, '>>> 开始还原系统变量...','='*30)
+    tmp_print('=' * 30, '>>> 开始还原系统变量...', '=' * 30)
     return restore_envs()
 
 """ ----------------------------------------------- 安装各步骤 ----------------------------------------------- """
@@ -453,6 +453,8 @@ def _install_chrome():
     # 2.1.如果未安装chrome, 则安装chrome
     elif chrome_version_state == CHROME_NOT_INSTALL:
         chrome_reinstall_state = __reinstall_chrome()
+    elif chrome_version_state == CHROME_HAD_INSTALL:
+        chrome_reinstall_state = True
 
     if not chrome_reinstall_state:
         tmp_print('x 未检测到可用的chrome, 请重试')
@@ -614,13 +616,13 @@ def _install_appium():
             return True
         elif appium_type == APPIUM_NOT_INSTALL:
             tmp_print('appium未安装, 准备开始安装...')
-            __reinstall_appium(True)  # 直接安装
+            return __reinstall_appium(True)  # 直接安装
         elif appium_type == APPIUM_NOT_TARGET_VERSION:
             tmp_print('appium版本非指定版本, 即将重新安装...')
-            __reinstall_appium()  # 先卸载再安装
+            return __reinstall_appium()  # 先卸载再安装
         elif appium_type == APPIUM_ERROR:
             tmp_print('检测appium版本出错, 即将重新安装...')
-            __reinstall_appium()  # 先卸载再安装
+            return __reinstall_appium()  # 先卸载再安装
     else:  # 符合要求
         tmp_print('√ appium已安装且符合要求, 无需重装')
         return True
@@ -761,9 +763,8 @@ def uninstall_envs():
         tmp_print('√ 还原系统环境变量完成')
     _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
 
-    tmp_print('='*30, '>>> 卸载操作结束','='*30)
+    tmp_print('=' * 30, '>>> 卸载操作结束', '=' * 30)
 
-# todo 2023/10/9 正式环境记得注释掉
-# install_envs()
+install_envs()
 # uninstall_envs()
 pass

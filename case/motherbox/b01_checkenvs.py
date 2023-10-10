@@ -245,7 +245,7 @@ def check_all_sys():
     :return:
     """
     chrome_state, chrome_infos, chrome_tip, _ = check_chrome()
-    chrome_install_path = chrome_infos[1]
+    chrome_install_path = chrome_infos[1] if chrome_infos is not None else default_chrome
     chromedriver_state, chromedriver_path, chromedriver_tip = check_chromedriver(chrome_install_path)
     envs_state, envs_tip = check_system_envpath(chrome_install_path)
     driver_state, driver_tip, _ = check_driver()
