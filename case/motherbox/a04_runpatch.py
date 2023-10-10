@@ -27,5 +27,5 @@ def run_patch():
     if patch_cdirs is None:
         tmp_print('x 脚本包没有可执行脚本, 请先回到菜单下载脚本')
         return False
-    # todo 2023/10/10 一切通过
+    # todo 2023/10/10 一切通过后列举出可执行脚本
     pass
