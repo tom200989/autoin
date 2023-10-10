@@ -700,7 +700,7 @@ def _install_driver(retry=0):
         tmp_print(f'安装驱动失败, 发生错误: {e}')
         return False
 
-def _add_sys_envs(test_mode=True):
+def _add_sys_envs():
     """
     配置系统环境变量
     """
@@ -763,6 +763,7 @@ def uninstall_envs():
 
     tmp_print('='*30, '>>> 卸载操作结束','='*30)
 
-install_envs()
+# todo 2023/10/9 正式环境记得注释掉
+# install_envs()
 # uninstall_envs()
 pass
