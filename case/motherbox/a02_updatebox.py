@@ -1,6 +1,3 @@
-import shutil
-import subprocess
-
 from b00_checknet import *
 from cminio_tools import *
 from ctmp_tools import *

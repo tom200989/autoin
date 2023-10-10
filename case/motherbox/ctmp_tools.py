@@ -14,12 +14,15 @@ import os
 import platform
 import socket
 import stat
-import subprocess
 import sys
 import time
 import winreg
 import psutil
 import winapps
+import requests
+import re
+import shutil
+import subprocess
 from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
@@ -45,6 +48,8 @@ nodejs_dir = root_dir + '/nodejs'  # nodejs目录
 driver_dir = root_dir + '/driver'  # driver目录
 sys_env_dir = root_dir + '/sys_env'  # 系统环境变量缓存目录
 sys_env_txt = sys_env_dir + '/sys_env.txt'  # 系统环境变量缓存文件
+patch_root = root_dir + '/patch'  # patch目录(脚本目录)
+patch_cdir_prefix = 'p_'  # patch目录下的子目录前缀
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 uninst_dirs = [chromesetup_dir,sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
 
@@ -559,3 +564,22 @@ def kill_port(port, pid):
     else:
         tmp_print("清理失败")
     return is_success
+
+def find_cdirs_prefix(target_dir, prefix):
+    """
+    查找指定目录下的所有子目录中符合前缀条件的子目录
+    :param target_dir:  指定目录
+    :param prefix:  前缀
+    :return:  符合前缀条件的子目录列表
+    """
+    try:
+        # 获取指定目录下的所有子目录
+        cdirs = [d for d in os.listdir(target_dir) if os.path.isdir(os.path.join(target_dir, d))]
+        # 过滤符合前缀条件的子目录
+        mdirs = [d for d in cdirs if d.startswith(prefix)]
+        # 如果有符合条件的子目录，则返回列表，否则返回None
+        return mdirs if mdirs and len(mdirs)>0 else None
+    except Exception as e:
+        tmp_print(f"查找脚本目录发生错误: {e}")
+        return None
+

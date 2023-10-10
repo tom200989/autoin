@@ -19,11 +19,11 @@ def main():
         #这里添加我们需要管理员权限的代码
         tmp_print('[+] 当前是正以管理员权限运行!')
         box_seleted = choice_pancel(choice_box[0], choice_box[1], choice_box[2], fun_cancel=main)
-        if box_seleted == '0':
+        if box_seleted == '0': # 点击退出
             exit()
-        elif box_seleted == '1':
+        elif box_seleted == '1':# 运行脚本
             select_patch(func_cancel=main)
-        elif box_seleted == '2':
+        elif box_seleted == '2': # 调试工具
             select_debug(fun_cancel=main)
 
         # 按任意键回到主菜单

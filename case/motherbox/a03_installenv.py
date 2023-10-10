@@ -1,6 +1,3 @@
-import os
-import shutil
-
 from b00_checknet import *
 from b01_checkenvs import *
 
