@@ -733,6 +733,7 @@ def install_envs():
     if not _install_driver(): return
     # 配置系统环境变量
     if not _add_sys_envs(): return
+    tmp_print('=' * 30, '>>> 安装操作全部执行完毕', '=' * 30)
 
 def uninstall_envs():
     """
@@ -763,7 +764,7 @@ def uninstall_envs():
         tmp_print('√ 还原系统环境变量完成')
     _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
 
-    tmp_print('=' * 30, '>>> 卸载操作结束', '=' * 30)
+    tmp_print('=' * 30, '>>> 卸载操作全部执行完毕', '=' * 30)
 
 # install_envs()
 # uninstall_envs()
