@@ -58,21 +58,21 @@ def run_patch(func_cancel):
     :param func_cancel:  当前面板下点击取消的回调函数
     """
 
-    # # 检查网络
-    # is_network_pass = check_all_nets()
-    # # 检查环境
-    # is_sys_pass = check_all_sys()
-    # # 如果网络或者环境变量不通过, 则不执行
-    # if not is_network_pass:
-    #     tmp_print('x 网络检查不通过, 请检查网络')
-    #     return False
-    # if not is_sys_pass:
-    #     tmp_print('x 环境检查不通过, 请检查环境')
-    #     return False
-    # # 检查是否有脚本目录以及该目录下是否有脚本目录
-    # if not os.path.exists(patch_root):
-    #     tmp_print('x 此前没有下载过任何, 请先回到菜单下载脚本')
-    #     return False
+    # 检查网络
+    is_network_pass = check_all_nets()
+    # 检查环境
+    is_sys_pass = check_all_sys()
+    # 如果网络或者环境变量不通过, 则不执行
+    if not is_network_pass:
+        tmp_print('x 网络检查不通过, 请检查网络')
+        return False
+    if not is_sys_pass:
+        tmp_print('x 环境检查不通过, 请检查环境')
+        return False
+    # 检查是否有脚本目录以及该目录下是否有脚本目录
+    if not os.path.exists(patch_root):
+        tmp_print('x 此前没有下载过任何, 请先回到菜单下载脚本')
+        return False
 
     # 检查脚本根目录下是否有脚本子目录 {'p_ble_conn_delta': 'D:\\autocase\\patch\\p_ble_conn_delta',}
     patch_cdirs_dict = find_cdirs_prefix(patch_root, patch_cdir_prefix)
