@@ -1,13 +1,6 @@
 from b00_checknet import *
 from b01_checkenvs import *
 
-# todo 2023/10/10 查找本地下载的脚本目录(列表)
-# todo 2023/10/10 用户选择脚本目录
-# todo 2023/10/10 安装脚本目录里的apk文件到手机
-# todo 2023/10/10 执行脚本目录里的exe文件
-
-# todo 2023/10/11 点击取消的操作
-
 def do_exe(pathc_dir):
     # 查看指定目录下是否有apk文件 且 只有一个apk文件 且 apk文件名是ecoflow_oversea.apk
     files = os.listdir(pathc_dir)  # 获取指定目录下的所有文件
@@ -48,7 +41,7 @@ def do_exe(pathc_dir):
     tmp_print(f'执行exe文件: {exe_command}')
     patch_exe = subprocess.Popen([exe_command], creationflags=subprocess.CREATE_NEW_CONSOLE)
     tmp_print("当前脚本进程ID:", patch_exe.pid)
-    exit() # 退出母盒, 目的是禁止压测人员重复调起脚本
+    exit()  # 退出母盒, 目的是禁止压测人员重复调起脚本
 
     return True
 
