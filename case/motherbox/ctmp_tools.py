@@ -28,13 +28,13 @@ from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
 from concurrent.futures import ProcessPoolExecutor, TimeoutError
 
-CMD                   = r"C:\Windows\System32\cmd.exe"
-FOD_HELPER            = r'C:\Windows\System32\fodhelper.exe'
-PYTHON_CMD            = "python"
-REG_PATH              = 'Software\Classes\ms-settings\shell\open\command'
+CMD = r"C:\Windows\System32\cmd.exe"
+FOD_HELPER = r'C:\Windows\System32\fodhelper.exe'
+PYTHON_CMD = "python"
+REG_PATH = 'Software\Classes\ms-settings\shell\open\command'
 DELEGATE_EXEC_REG_KEY = 'DelegateExecute'
 
-test_mode = True # 是否为测试模式(默认为测试模式, 不重启)
+test_mode = True  # 是否为测试模式(默认为测试模式, 不重启)
 
 motherbox_version = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
@@ -51,7 +51,7 @@ sys_env_txt = sys_env_dir + '/sys_env.txt'  # 系统环境变量缓存文件
 patch_root = root_dir + '/patch'  # patch目录(脚本目录)
 patch_cdir_prefix = 'p_'  # patch目录下的子目录前缀
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
-uninst_dirs = [chromesetup_dir,sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
+uninst_dirs = [chromesetup_dir, sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
 
 # ndk的版本(固定)
 ndk_target = '25.1.8937393'
@@ -244,7 +244,8 @@ def choice_pancel(title, text, items, fun_cancel):
     selects = radiolist_dialog(title=title, text=text, values=items).run()
     if not selects:  # 如果没有选择任何选项
         if fun_cancel:  # 且回调函数不为空
-            fun_cancel()  # 执行回调函数
+            fun_cancel()  # 执行回调函数(带参)
+
         else:  # 回调函数为空(外部也不告知如何处理)
             tmp_print("x 未选择任何选项")  # 则默认打印
         return None
@@ -451,7 +452,7 @@ def restore_envs():
         tmp_print(f'环境变量已从 <{sys_env_txt}> 还原')
         tmp_print(get_cur_envs())
 
-        if not test_mode: # 非测试模式 - 重启
+        if not test_mode:  # 非测试模式 - 重启
             tmp_print('环境变量还原完毕, 5秒后重启电脑...(请勿操作)')
             time.sleep(3)
             os.system('shutdown -r -t 0')
@@ -567,19 +568,19 @@ def kill_port(port, pid):
 
 def find_cdirs_prefix(target_dir, prefix):
     """
-    查找指定目录下的所有子目录中符合前缀条件的子目录
-    :param target_dir:  指定目录
-    :param prefix:  前缀
-    :return:  符合前缀条件的子目录列表
+    查找指定目录下的所有子目录中符合前缀条件的子目录，并以字典形式返回
+    :param target_dir: 指定目录
+    :param prefix: 前缀
+    :return: 符合前缀条件的子目录的字典（目录名作为key，路径作为value）
     """
     try:
-        # 获取指定目录下的所有子目录
-        cdirs = [d for d in os.listdir(target_dir) if os.path.isdir(os.path.join(target_dir, d))]
-        # 过滤符合前缀条件的子目录
-        mdirs = [d for d in cdirs if d.startswith(prefix)]
-        # 如果有符合条件的子目录，则返回列表，否则返回None
-        return mdirs if mdirs and len(mdirs)>0 else None
+        # 使用列表解析获取符合条件的目录
+        cdirs = [os.path.abspath(os.path.join(target_dir, d)) for d in os.listdir(target_dir) if os.path.isdir(os.path.join(target_dir, d)) and d.startswith(prefix)]
+        # 使用字典推导式创建字典
+        result_dict = {os.path.basename(dir_path): dir_path for dir_path in cdirs}
+        # 按照目录名的ASCII码进行排序
+        sorted_result_dict = dict(sorted(result_dict.items()))
+        return sorted_result_dict if sorted_result_dict else None
     except Exception as e:
         tmp_print(f"查找脚本目录发生错误: {e}")
         return None
-

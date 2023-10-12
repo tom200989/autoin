@@ -142,6 +142,34 @@ def check_adb(retry_count=1):
         tmp_print(f"x 重试失败，检查ADB连接时出错: {e}")
         return False
 
+# ---------------------------------------------- 手机版本 ----------------------------------------------
+def check_phone():
+    """
+    检查手机SDK版本
+    :return: 手机sdk版本
+    """
+    try:
+        # 执行adb命令获取Android SDK版本
+        result = subprocess.check_output(["adb", "shell", "getprop", "ro.build.version.sdk"], stderr=subprocess.STDOUT, encoding='utf-8')
+        sdk_version = int(result.strip())  # 转换为整数
+        # 只支持Android 24到33
+        if sdk_version < 24:
+            tip = f"x 手机SDK版本过低(Android SDK {sdk_version}), 请使用Android 7以上(含Android 7)的原生手机"
+            tmp_print(tip)
+            return False, sdk_version, tip
+        if sdk_version > 33:
+            tip = f"x 手机SDK版本过高(Android SDK {sdk_version}), 请使用Android 14以下(不含Android 14)的原生手机"
+            tmp_print(tip)
+            return False, sdk_version, tip
+
+        tip = f"√ 手机SDK版本已匹配: {sdk_version}"
+        tmp_print(tip)
+        return True, sdk_version, tip
+    except Exception as e:
+        tip = f"x 获取手机版本出错: {e}"
+        tmp_print(tip)
+        return False, tip
+
 # ---------------------------------------------- minio存储桶状态 ----------------------------------------------
 def check_minio():
     # 检查atrust是否打开
@@ -188,22 +216,27 @@ def check_phone_wifi(target_wifi="EF-office"):
         return False
 
 # ---------------------------------------------- 检查全部环境 ----------------------------------------------
-def check_all_nets(is_adb=True):
+def check_all_nets(is_need_adb=True):
     """
     检查全部环境
-    @param is_adb: 是否检查adb连接(默认检查)
+    @param is_need_adb: 是否检查adb连接(默认检查)
     """
     target_wifi = "EF-office"
+    is_adb = check_adb()
     state_map = {  #
         'state_pc_wifi': [check_pc_wifi(target_wifi), f'tips: 请把本机连接到{target_wifi}!(可能会导致无法运行脚本)'],  # 本机wifi连接
         'state_ecoflow': [check_ecoflow_server(), 'tips: 当前连接后台服务器异常!(可能会导致APP压测数据不准)'],  # 后台连接检测
         'state_google': [check_google(), 'tips: 当前访问外网异常!(可能会导致APP无法配网)'],  # 外网连接检测
         'state_minio': [check_minio(), 'tips: 当前访问minio存储桶异常!(可能会导致无法查看压测数据,请检查atrust是否已经开启并已登录)'],  # minio存储桶
-        'state_adb': [check_adb(), 'tips: 当前连接手机异常!(可能会导致全链路压测无法进行)']  # adb检测
+        'state_adb': [is_adb, 'tips: 当前连接手机异常!(可能会导致全链路压测无法进行)']  # adb检测
     }
-    if state_map['state_adb'][0]:
+    if is_adb:
         # 手机wifi连接
         state_map['state_phone_wifi'] = [check_phone_wifi(target_wifi), f'tips: 请把本机连接到{target_wifi}!(可能会导致APP无法登录)']
+        # 手机版本
+        is_phone,phone_v, phone_tip = check_phone()
+        state_map['state_phone'] =[is_phone, f'tips: {phone_tip}']  # 手机检测
+
 
     tmp_print('')
     tmp_print('>' * 80)
@@ -211,7 +244,7 @@ def check_all_nets(is_adb=True):
     final_state = True
     for state_key, state_value in state_map.items():
         # 如果不检查adb连接, 则跳过
-        if state_key == 'state_adb' and not is_adb:
+        if state_key == 'state_adb' and not is_need_adb:
             continue
         if not state_value[0]:
             final_state = False
