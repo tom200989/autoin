@@ -29,7 +29,6 @@ def do_exe(pathc_dir):
         return False
 
     # 安装apk文件
-    # todo 2023/10/12 需调试
     tmp_print('开始安装apk文件...')
     is_exist, info = where_cmd('adb')  # 查找adb的路径(is_exist为True, info为路径(注意是exe路径, 如果需要去掉exe, 可以使用os.path.dirname(info)))
     if not is_exist:
@@ -44,7 +43,6 @@ def do_exe(pathc_dir):
     input('请先打开app,注册账号并登录(无需添加设备),如已经注册并登录,请按任意键继续...')
 
     # 执行exe文件
-    # todo 2023/10/12 需调试
     tmp_print('开始执行exe文件...')
     exe_command = f"{pathc_dir}\\{exe_files[0]}"
     tmp_print(f'执行exe文件: {exe_command}')
