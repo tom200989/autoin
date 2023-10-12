@@ -22,9 +22,9 @@ def main():
         if box_seleted == '0': # 点击退出
             exit()
         elif box_seleted == '1':# 运行脚本
-            select_patch(func_cancel=main)
+            select_patch(back_func(main))
         elif box_seleted == '2': # 调试工具
-            select_debug(fun_cancel=main)
+            select_debug(back_func(main))
 
         # 按任意键回到主菜单
         input('按任意键回到主菜单')

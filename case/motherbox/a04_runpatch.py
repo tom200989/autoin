@@ -28,6 +28,7 @@ def do_exe(pathc_dir):
         tmp_print('x exe文件检查不通过, 当前exe文件不是[自动化专项]压测版本')
         return False
 
+    return
     # 安装apk文件
     # todo 2023/10/12 需调试
     adb_command = f"adb install -r -t {pathc_dir}\\{apk_files[0]}"

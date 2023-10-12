@@ -12,7 +12,8 @@ def select_patch(func_cancel):
     # 脚本选择面板
     patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
     if patch_seleted == '0':
-        run_patch(func_cancel)  # 运行脚本
+        # 返回上一级
+        run_patch(back_func(select_patch, func_cancel))  # 运行脚本
     elif patch_seleted == '1':
         # todo 2023/9/7 下载脚本
         print('下载脚本')

@@ -27,6 +27,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.shortcuts import checkboxlist_dialog
 from prompt_toolkit.shortcuts import radiolist_dialog
 from concurrent.futures import ProcessPoolExecutor, TimeoutError
+from functools import partial
 
 CMD = r"C:\Windows\System32\cmd.exe"
 FOD_HELPER = r'C:\Windows\System32\fodhelper.exe'
@@ -250,6 +251,19 @@ def choice_pancel(title, text, items, fun_cancel):
             tmp_print("x 未选择任何选项")  # 则默认打印
         return None
     return selects[0]
+
+def back_func(func, argk=None):
+    """
+    执行回退的函数 (返回的是一个新的函数对象，这个对象内部已经“记住了”原函数和预设的参数)
+    这个做法可以避免传递函数时后边携带一大堆参数
+    :param func: 点击cancel时回退的函数
+    :param argk: 函数所需的参数
+    :return:
+    """
+    if argk is None:
+        return func
+    else:
+        return partial(func, func_cancel=argk)
 
 def get_pack_dirname():
     """
