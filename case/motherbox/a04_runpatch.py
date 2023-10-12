@@ -28,21 +28,31 @@ def do_exe(pathc_dir):
         tmp_print('x exe文件检查不通过, 当前exe文件不是[自动化专项]压测版本')
         return False
 
-    return
     # 安装apk文件
     # todo 2023/10/12 需调试
+    tmp_print('开始安装apk文件...')
+    is_exist, info = where_cmd('adb')  # 查找adb的路径(is_exist为True, info为路径(注意是exe路径, 如果需要去掉exe, 可以使用os.path.dirname(info)))
+    if not is_exist:
+        tmp_print('x 未找到adb命令, 请检查环境变量是否已经安装adb')
+        return False
     adb_command = f"adb install -r -t {pathc_dir}\\{apk_files[0]}"
     tmp_print(f'安装apk文件: {adb_command}')
-    result = subprocess.check_output(adb_command, shell=True, stderr=subprocess.STDOUT, encoding='utf-8')
-    tmp_print(result)
-    time.sleep(8)
+    adb_shell(adb_command, True, os.path.dirname(info))
+    time.sleep(5)
+    tmp_print('安装apk文件完成')
+
+    input('请先打开app,注册账号并登录(无需添加设备),如已经注册并登录,请按任意键继续...')
 
     # 执行exe文件
     # todo 2023/10/12 需调试
+    tmp_print('开始执行exe文件...')
     exe_command = f"{pathc_dir}\\{exe_files[0]}"
     tmp_print(f'执行exe文件: {exe_command}')
     patch_exe = subprocess.Popen([exe_command], creationflags=subprocess.CREATE_NEW_CONSOLE)
     tmp_print("当前脚本进程ID:", patch_exe.pid)
+    exit() # 退出母盒, 目的是禁止压测人员重复调起脚本
+
+    return True
 
 def run_patch(func_cancel):
     """
@@ -75,7 +85,7 @@ def run_patch(func_cancel):
     patch_cdirs_list = [(str(index), cdirname) for index, cdirname in enumerate(list(patch_cdirs_dict.keys()))]
     # 进入面板选择 '0'
     choice_patch = ['选择要执行的脚本', '请选择:', patch_cdirs_list]
-    patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel )
+    patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
     tmp_print(f'当前选中: {patch_seleted} -> {patch_cdirs_list[int(patch_seleted)]}')
     # 得到绝对路径 'D:\\autocase\\patch\\p_ble_conn_delta'
     local_path = "None"
@@ -89,5 +99,6 @@ def run_patch(func_cancel):
         do_exe(local_path)
     else:
         tmp_print(f'x 脚本目录不存在: {local_path}')
+        # 创建脚本目录(不提示,直接创建)
+        os.makedirs(local_path)
         return False
-

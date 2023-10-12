@@ -53,6 +53,7 @@ patch_root = root_dir + '/patch'  # patch目录(脚本目录)
 patch_cdir_prefix = 'p_'  # patch目录下的子目录前缀
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 uninst_dirs = [chromesetup_dir, sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
+adb_exe = os.path.join(sdk_dir, 'platform-tools', 'adb.exe')  # adb.exe文件名
 
 # ndk的版本(固定)
 ndk_target = '25.1.8937393'
@@ -598,3 +599,56 @@ def find_cdirs_prefix(target_dir, prefix):
     except Exception as e:
         tmp_print(f"查找脚本目录发生错误: {e}")
         return None
+
+# 输入adb shell指令
+def adb_shell(cmd, is_print_ori=False, adb_path=adb_exe):
+    """
+    输入adb shell指令
+    :param cmd:  待执行的adb shell指令
+    :param is_print_ori:  是否打印原始命令字符
+    :param adb_path:  adb.exe文件路径
+    :return:
+    """
+    inputCmd = str(cmd)
+    executeDir = adb_path  # 写你的adb路径
+
+    try:
+        # 执行指令
+        process = subprocess.Popen(inputCmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, cwd=executeDir)
+        # 读取结果
+        result = process.stdout.read().decode()
+        # 删除ANSI转义字符
+        new_result = remove_ansi(result)
+        # 切割数据
+        result_list = str(new_result).strip().split("\r\n")
+        # 打印原始命令字符
+        if is_print_ori:
+            for re in result_list:
+                tmp_print(re)
+    except Exception as err:
+        raise AssertionError('Execute adb command: {:s} error,{:s}'.format(inputCmd, err))
+
+    return result_list
+
+# 删除ANSI转义字符
+def remove_ansi(result):
+    ansi_escape_regex = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    return ansi_escape_regex.sub('', result)
+
+def where_cmd(find_cmd):
+    """
+    查找指定命令的路径
+    :param find_cmd:  待查找的命令(如adb, appium)
+    :return:  True: 存在, False: 不存在
+    """
+    # 执行CMD命令并获取输出
+    result = subprocess.run(['where', find_cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    # 判断命令是否成功执行
+    if result.returncode == 0:
+        path = result.stdout
+        tmp_print(f'查找到: {path}')
+        return True, path
+    else:
+        err = result.stderr
+        tmp_print(f'未找到: {err}')
+        return False, err
