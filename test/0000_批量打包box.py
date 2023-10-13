@@ -83,8 +83,34 @@ def del_rw(action, name, exc):
         print('文件夹被进程占用, 正在强制删除: ', error)
         os.popen(f'rd /s /q {name}')  # 如果当前文件夹被占用, 则强制删除
 
+def restart_adb():
+    try:
+        subprocess.run(["adb", "kill-server"], universal_newlines=True, encoding='utf-8')
+        subprocess.run(["adb", "start-server"], universal_newlines=True, encoding='utf-8')
+        print("ADB服务已重启")
+        return True
+    except Exception as e:
+        print(f"x 重启ADB服务时出错: {e}")
+        return False
+
+def check_adb_install():
+    try:
+        cmd_output = subprocess.check_output(["adb", "version"], universal_newlines=True, encoding='utf-8')
+        if "Android Debug Bridge version" in cmd_output:
+            print("√ ADB已安装")
+            return True
+        else:
+            print("x ADB未安装")
+            return False
+    except Exception as e:
+        print(f"x 检查ADB安装时出错: {e}")
+        return False
+
 # ---------------------------------------------- 流程 ----------------------------------------------
 def pack():
+    if check_adb_install():
+        restart_adb()
+
     # 为每个项目执行打包命令
     for project_fun, project_path in project_paths.items():
         try:
