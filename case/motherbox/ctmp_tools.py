@@ -655,3 +655,26 @@ def where_cmd(find_cmd):
         err = result.stderr
         tmp_print(f'未找到: {err}')
         return False, err
+
+def restart_adb():
+    try:
+        subprocess.run(["adb", "kill-server"], universal_newlines=True, encoding='utf-8')
+        subprocess.run(["adb", "start-server"], universal_newlines=True, encoding='utf-8')
+        tmp_print("ADB服务已重启")
+        return True
+    except Exception as e:
+        tmp_print(f"x 重启ADB服务时出错: {e}")
+        return False
+
+def check_adb_install():
+    try:
+        cmd_output = subprocess.check_output(["adb", "version"], universal_newlines=True, encoding='utf-8')
+        if "Android Debug Bridge version" in cmd_output:
+            tmp_print("√ ADB已安装")
+            return True
+        else:
+            tmp_print("x ADB未安装")
+            return False
+    except Exception as e:
+        tmp_print(f"x 检查ADB安装时出错: {e}")
+        return False
