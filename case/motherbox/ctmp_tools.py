@@ -84,7 +84,7 @@ minio_chromedriver_root = 'autocase/android/env/chromes/chromedriver/'  # chrome
 
 # sdk.zip路径
 # todo 2023/10/9 正式环境下修改回 sdk.zip
-minio_sdk = 'autocase/android/env/sdk/sdk1.zip'  # sdk.zip的路径
+minio_sdk = 'autocase/android/env/sdk/sdk.zip'  # sdk.zip的路径
 # jdk.zip路径
 minio_jdk = 'autocase/android/env/jdk/jdk.zip'  # jdk.zip的路径
 # gradle.zip路径
