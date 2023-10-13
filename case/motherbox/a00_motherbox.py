@@ -1,6 +1,6 @@
 from a01_input import *
 
-choice_box = [f'自动化测试(V{motherbox_version})', '请选择:', [('0', '退出(exit)'), ('1', '执行脚本'), ('2', '调试工具')]]
+choice_box = [f'自动化测试(V{motherbox_version})', '请选择:', [('0', '运行脚本'), ('1', '调试工具'), ('2', '退出(exit)')]]
 
 def main():
     if not is_admin():
@@ -16,15 +16,15 @@ def main():
             tmp_print('[!] 未能绕过UAR认证, 请右键以[管理员身份]运行该软件...')
             sys.exit(1)
     else:
-        #这里添加我们需要管理员权限的代码
+        # 这里添加我们需要管理员权限的代码
         tmp_print('[+] 当前是正以管理员权限运行!')
         box_seleted = choice_pancel(choice_box[0], choice_box[1], choice_box[2], fun_cancel=main)
-        if box_seleted == '0': # 点击退出
-            exit()
-        elif box_seleted == '1':# 运行脚本
+        if box_seleted == '0':  # 运行脚本
             select_patch(back_func(main))
-        elif box_seleted == '2': # 调试工具
+        elif box_seleted == '1':  # 调试工具
             select_debug(back_func(main))
+        elif box_seleted == '2':  # 点击退出
+            sys.exit()
 
         # 按任意键回到主菜单
         input('按任意键回到主菜单')
@@ -40,7 +40,7 @@ def main2():
     while True:
         text = session.prompt('>>> 输入指令([0]退出测试 / [1]执行脚本 / [2]调试工具): ')
         if text == '0':  # 退出
-            exit()
+            sys.exit()
             break
         elif text == '1':  # 脚本选项
             select_patch(func_cancel=main2)

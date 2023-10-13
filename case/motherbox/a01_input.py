@@ -1,6 +1,7 @@
 from a02_updatebox import *
 from a03_installenv import *
 from a04_runpatch import *
+from a05_downpatch import *
 
 choice_patch = ['选择操作类型', '请选择:', [('0', '运行脚本'), ('1', '下载脚本')]]
 choice_debug = ['选择调试功能', '请选择:', [('0', '检测网络'), ('1', '检测环境'), ('2', '安装环境'), ('3', '还原系统变量'), ('4', '更新母盒')]]
@@ -15,7 +16,7 @@ def select_patch(func_cancel):
         # 返回上一级
         run_patch(back_func(select_patch, func_cancel))  # 运行脚本
     elif patch_seleted == '1':
-        # todo 2023/9/7 下载脚本
+        downpatch(back_func(select_patch, func_cancel))  # 下载脚本
         print('下载脚本')
 
 def select_debug(fun_cancel):

@@ -39,7 +39,7 @@ test_mode = True  # 是否为测试模式(默认为测试模式, 不重启)
 
 motherbox_version = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
-patch_dir = root_dir + '/case_log'  # 运行日志目录
+case_log_dir = root_dir + '/case_log'  # 运行日志目录
 boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
 chromesetup_dir = root_dir + '/chromesetup'  # ChromeSetup.zip目录
 sdk_dir = root_dir + '/sdk'  # sdk目录
@@ -89,6 +89,9 @@ minio_sdk = 'autocase/android/env/sdk/sdk1.zip'  # sdk.zip的路径
 minio_jdk = 'autocase/android/env/jdk/jdk.zip'  # jdk.zip的路径
 # gradle.zip路径
 minio_gradle = 'autocase/android/env/gradle/gradle.zip'  # gradle.zip的路径
+
+# patch的角色目录路径
+minio_patch_root = 'autocase/android/patch/'  # patch的根目录 (注意, 要加一个`/`结尾,可能会有重复的前缀目录, 也会被搜索出来)
 
 # driver.zip路径
 minio_driver_root = 'autocase/android/env/driver/'  # driver的根路径
@@ -165,10 +168,10 @@ def out(content):
     :param content: 内容
     """
     # 创建目录
-    if not os.path.exists(patch_dir):
-        os.makedirs(patch_dir)
+    if not os.path.exists(case_log_dir):
+        os.makedirs(case_log_dir)
     # 创建文件
-    patch_path = patch_dir + f'/{get_today()}_scan_patch.txt'
+    patch_path = case_log_dir + f'/{get_today()}_patch_log.txt'
     if not os.path.exists(patch_path):
         open(patch_path, 'w').close()
     # 2022-11-29 17:25:25 ==> xxxxxx
