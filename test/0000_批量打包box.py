@@ -13,6 +13,27 @@ from minio.error import S3Error
 from case.motherbox.ctmp_tools import motherbox_version
 from case.boxhelper.zboxtools import boxhelper_version
 
+def get_project_rootdir():
+    """
+    获取工程的根目录
+    :return:  工程根目录
+    """
+    # 获取当前文件的目录
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # 从当前目录开始向上查找
+    while True:
+        # 获取当前路径下的所有文件和目录
+        dirs = os.listdir(current_dir)
+        # 检查是否存在"venv"目录
+        if 'venv' in dirs:
+            return current_dir
+        # 向上移动一个目录
+        parent_path = os.path.dirname(current_dir)
+        # 如果已到达文件系统根目录，则停止
+        if parent_path == current_dir:
+            return None
+        current_dir = parent_path
+
 endpoint = 'minio.ecoflow.com:9000'
 access_key = 'EQS4J84JGJCDYNENIMT1'
 secret_key = '8Vgk11c9bDOpZPTJMexPLrxZpzEOqro+jZyAUh+a'
@@ -24,8 +45,8 @@ minio_boxhelper_root = 'autocase/android/boxhelper/'  # boxhelper的根目录 (�
 
 # 定义要打包的项目路径列表
 project_paths = {  #
-    'motherbox.exe': r'D:\project\python\autoin\case\motherbox',  # 母盒
-    'boxhelper.exe': r'D:\project\python\autoin\case\boxhelper',  # 母盒辅助器
+    'motherbox.exe': os.path.join(get_project_rootdir(),'case','motherbox'),  # 母盒
+    'boxhelper.exe': os.path.join(get_project_rootdir(),'case','boxhelper'),  # 母盒辅助器
 }
 
 # 临时文件夹(用于存入打包后的文件) - 注意, 此处修改需要同步修改setup.py中的同名变量
@@ -205,5 +226,5 @@ def zip_upload():
 # 执行打包
 pack()
 # 执行压缩并上传
-# zip_upload()
+zip_upload()
 pass
