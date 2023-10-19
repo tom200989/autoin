@@ -125,14 +125,14 @@ def pack():
             # 切换到项目目录
             print('切换到项目目录:', project_path)
             os.chdir(project_path)
-            print('正在删除build文件夹')
+            print('正在删除工程中build文件夹')
             build_path = os.path.join(project_path, 'build')
             if os.path.exists(build_path) and os.path.isdir(build_path):
                 shutil.rmtree(build_path, onerror=del_rw)
-                print('build文件夹已删除')
+                print('工程中的build文件夹已删除')
             # 再次检查build文件夹是否存在
             if os.path.exists(build_path) and os.path.isdir(build_path):
-                print('build文件夹删除失败, 请手动删除后重试!')
+                print('工程中的build文件夹删除失败, 请手动删除后重试!')
                 break
             else:
                 print('开始打包...')
