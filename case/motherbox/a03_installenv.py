@@ -215,7 +215,7 @@ def __reinstall_appium(direct_install=False):
 
     # 安装
     tmp_print('正在安装 Appium...')
-    install_cmd = 'npm --registry http://registry.npm.taobao.org install appium@1.22.3 -g --no-optional --no-audit --no-fund'
+    install_cmd = 'npm install appium@1.22.3 -g --no-optional --no-audit --no-fund'
     tmp_print(install_cmd)
     try:
         # 执行安装
