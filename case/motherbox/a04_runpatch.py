@@ -78,11 +78,11 @@ def run_patch(func_cancel):
         # 进入面板选择 '0'
         choice_patch = ['选择要执行的脚本', '请选择:', patch_cdirs_list]
         patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
-        tmp_print(f'当前选中: {patch_seleted} -> {patch_cdirs_list[int(patch_seleted)]}')
+        tmp_print(f'当前选中: {str(patch_seleted)} -> {patch_cdirs_list[int(patch_seleted)]}')
         # 得到绝对路径 'D:\\autocase\\patch\\p_ble_conn_delta'
         local_path = "None"
         for tunple in patch_cdirs_list:
-            if patch_seleted in tunple[0]:
+            if str(patch_seleted) in tunple[0]:
                 local_path = patch_cdirs_dict[tunple[1]]
                 break
         tmp_print(f'脚本地址: {local_path}')

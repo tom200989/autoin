@@ -54,6 +54,6 @@ def downpatch(func_cancel):
 
         return True
     except Exception as e:
-        tmp_print(f'x 脚本下载失败, {e}')
         traceback.print_exc()
+        tmp_print(f'x 脚本下载失败, {e}')
         return False

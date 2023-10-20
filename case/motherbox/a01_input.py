@@ -12,10 +12,10 @@ def select_patch(func_cancel):
     """
     # 脚本选择面板
     patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
-    if patch_seleted == '0':
+    if str(patch_seleted) == '0':
         # 返回上一级
         run_patch(back_func(select_patch, func_cancel))  # 运行脚本
-    elif patch_seleted == '1':
+    elif str(patch_seleted) == '1':
         downpatch(back_func(select_patch, func_cancel))  # 下载脚本
         print('下载脚本')
 
@@ -26,13 +26,13 @@ def select_debug(fun_cancel):
     """
     # 脚本选择面板
     debug_selected = choice_pancel(choice_debug[0], choice_debug[1], choice_debug[2], fun_cancel=fun_cancel)
-    if debug_selected == '0':  # 检查网络
+    if str(debug_selected) == '0':  # 检查网络
         check_all_nets()
-    elif debug_selected == '1':  # 检查环境
+    elif str(debug_selected) == '1':  # 检查环境
         check_all_sys()
-    elif debug_selected == '2':  # 安装环境
+    elif str(debug_selected) == '2':  # 安装环境
         install_envs()
-    elif debug_selected == '3':  # 还原环境
+    elif str(debug_selected) == '3':  # 还原环境
         restore_envs()
-    elif debug_selected == '4':  # 更新母盒
+    elif str(debug_selected) == '4':  # 更新母盒
         update_box()
