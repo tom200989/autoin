@@ -738,39 +738,36 @@ def remove_who(file_path):
     """
     删除文件
     """
-    for i in range(3):
-        try:
-            count = 0
-            if not os.path.exists(file_path): return True
-            # 查看进程是否被占用 oc_state ==> 0: 未被占用, 1: 被占用, -1: 查询失败
+    try:
+        count = 0
+        if not os.path.exists(file_path): return True
+        # 进入100秒的查询 -- 100秒如果依然被占用则直接抛出异常
+        while count < 30:
+            tmp_print('查询占用状态....')
             oc_state, oc_exes, oc_tip = find_who_occupt(file_path)
-            if oc_state == 0 or oc_state == -1:  # 未被占用/查询失败 - 直接删除
-                os.remove(file_path)
-            else:
+            if oc_state == 0:  # 如果未被占用
+                tmp_print(f"文件已被释放: {file_path}")
+                break
+            elif oc_state == 1:  # 如果被占用
+                tmp_print(f"文件被占用,正尝试杀死进程...")
                 # 杀死占用进程
                 for exe in oc_exes.keys():
                     # 杀死进程
-                    tmp_print(f"正在杀死进程: {exe}:{oc_exes[exe]}")
+                    tmp_print(f"./././ 正在杀死进程: {exe}:{oc_exes[exe]}")
                     kill_exe(exe)
                     os.system(f'taskkill /f /pid {oc_exes[exe]}')
                     time.sleep(1)
-                # 进入100秒的查询 -- 100秒如果依然被占用则直接抛出异常
-                while count < 30:
-                    tmp_print('查询占用状态....')
-                    count += 1
-                    time.sleep(5)
-                    oc_state, oc_exes, oc_tip = find_who_occupt(file_path)
-                    if oc_state == 0:
-                        tmp_print(f"文件已被释放, 重试删除文件: {file_path}")
-                        break
-                # 再次尝试删除文件
-                if os.path.exists(file_path): os.remove(file_path)
+            else:
+                tmp_print(f"查询异常,正在重试: {oc_tip}")
+                continue
+            # 休眠
+            time.sleep(5)
 
-            tmp_print(f"删除文件成功: {file_path}")
-            return True
-        except Exception as e:
-            tmp_print(f"删除文件失败, 正在重试: {e}")
-            time.sleep(3)
-            continue
-    # 删除5次依然失败 - 直接抛出异常
-    raise Exception(f"删除文件失败: {file_path}")
+        # 尝试删除文件
+        os.remove(file_path)
+        tmp_print(f"删除文件成功: {file_path}")
+        return True
+    except Exception as e:
+        # 依然失败 - 直接抛出异常
+        tmp_print(f"删除文件失败, 正在重试: {e}")
+        raise Exception(f"删除文件失败: {file_path}")
