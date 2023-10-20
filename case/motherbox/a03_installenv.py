@@ -52,8 +52,12 @@ def __checkdown_chromedriver():
             tmp_print(f'即将下载chromedriver到: {driver_zippath}...')
             # 先删除旧的chromedriver
             tmp_print('正在删除旧的chromedriver...')
-            if os.path.exists(str(driver_path)): os.remove(str(driver_path))  # 删除旧的chromedriver.exe
-            if os.path.exists(str(driver_zippath)): os.remove(str(driver_zippath))  # 删除旧的chromedriver.zip
+            if os.path.exists(str(driver_path)):
+                time.sleep(2)
+                remove_who(str(driver_path))# 删除旧的chromedriver.exe
+            if os.path.exists(str(driver_zippath)):
+                time.sleep(2)
+                remove_who(str(driver_zippath))# 删除旧的chromedriver.zip
             # 下载chromedriver
             tmp_print('正在下载chromedriver...')
             download_obj(driver_zippath, chromedriver_path)
@@ -62,7 +66,8 @@ def __checkdown_chromedriver():
             shutil.unpack_archive(driver_zippath, chrome_install_dir)
             # 删除压缩包
             tmp_print('正在删除压缩包...')
-            os.remove(str(driver_zippath))
+            time.sleep(2)
+            remove_who(str(driver_zippath))
             # 把解压后的 chromedriver.exe 和 LICENSE.chromedriver 移动到chrome/Application目录下
             tmp_print('正在移动解压后的文件...')
             files_to_move = ["chromedriver.exe", "LICENSE.chromedriver"]
@@ -116,7 +121,8 @@ def __reinstall_chrome(chrome_infos=None):
         shutil.unpack_archive(chromesetup_path, chromesetup_dir)
         # 删除压缩包
         tmp_print('正在删除压缩包...')
-        os.remove(str(chromesetup_path))
+        time.sleep(2)
+        remove_who(str(chromesetup_path))
         # 安装chrome
         tmp_print('正在重新安装chrome...')
         chromesetup_exe = os.path.join(chromesetup_dir, 'ChromeSetup.exe')
@@ -173,7 +179,8 @@ def __reinstall_node(direct_install=False):
     shutil.unpack_archive(nodejs_zip, nodejs_dir)
     # 删除压缩包
     tmp_print('正在删除压缩包...')
-    os.remove(str(nodejs_zip))
+    time.sleep(2)
+    remove_who(str(nodejs_zip))
     # 安装nodejs
     tmp_print('正在安装nodejs...')
     nodejs_msi_path = os.path.join(nodejs_dir, 'nodejs.msi')
@@ -273,7 +280,8 @@ def _uninstall_chrome(chrome_infos=None):
             tmp_print('正在删除chromedriver...')
             chrome_install_dir = str(chrome_infos[1])  # xx/Application
             chromedriver_path = os.path.join(chrome_install_dir, 'chromedriver.exe')
-            if os.path.exists(str(chromedriver_path)): os.remove(str(chromedriver_path))
+            if os.path.exists(str(chromedriver_path)):
+                remove_who(str(chromedriver_path))
             tmp_print('chromedriver删除成功')
             return True
         else:
@@ -498,7 +506,8 @@ def _install_sdk_jdk_gradle():
             time.sleep(1)
             # 删除压缩包
             tmp_print('正在删除压缩包...')
-            os.remove(str(sdk_local_zip))
+            time.sleep(2)
+            remove_who(str(sdk_local_zip))
 
         sdk_i = True
     except Exception as e:
@@ -524,7 +533,8 @@ def _install_sdk_jdk_gradle():
             time.sleep(1)
             # 删除压缩包
             tmp_print('正在删除压缩包...')
-            os.remove(str(jdk_local_zip))
+            time.sleep(2)
+            remove_who(str(jdk_local_zip))
 
         jdk_i = True
     except Exception as e:
@@ -550,7 +560,7 @@ def _install_sdk_jdk_gradle():
             time.sleep(1)
             # 删除压缩包
             tmp_print('正在删除压缩包...')
-            os.remove(str(gradle_local_zip))
+            remove_who(str(gradle_local_zip))
 
         gradle_i = True
     except Exception as e:
@@ -660,7 +670,7 @@ def _install_driver(retry=0):
                 shutil.unpack_archive(local_driver_zip, os.path.join(driver_dir, d_name))
                 # 删除压缩包
                 tmp_print(f'正在删除压缩包: {d_name}...')
-                os.remove(str(local_driver_zip))
+                remove_who(str(local_driver_zip))
 
             # 安装驱动
             for d_u in d_uninstall:

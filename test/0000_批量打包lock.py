@@ -23,6 +23,7 @@ def del_rw(action, name, exc):
         # 先解除占用
         # unoccupied(name)
         # 再删除文件夹
+        time.sleep(2)
         os.remove(name)
     except Exception as error:
         print('文件夹被进程占用, 正在强制删除: ', error)

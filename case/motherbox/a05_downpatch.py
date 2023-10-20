@@ -1,3 +1,5 @@
+import traceback
+
 from b00_checknet import *
 
 def downpatch(func_cancel):
@@ -22,9 +24,9 @@ def downpatch(func_cancel):
         # 进入面板选择
         choice_patch = ['选择要下载的脚本', '请选择:', patch_list]
         patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
-        tmp_print(f'当前选中: {patch_seleted} -> {patch_list[int(patch_seleted)]}')
+        tmp_print(f'当前选中: {patch_seleted} -> {patch_list[int(str(patch_seleted))]}')
         # 根据选择的key, 得到minio的路径 'autocase/android/patch/p_ble_net_49011_202310131506.zip'
-        need_down_path = patch_dicts[patch_list[int(patch_seleted)][1]]
+        need_down_path = patch_dicts[patch_list[int(str(patch_seleted))][1]]
         tmp_print('minio路径: ', need_down_path)
         # 得到本地路径 'D:\\autocase\\patch\\p_ble_net_49011_202310131506.zip'
         local_path = f'{patch_root}/{need_down_path.split("/")[-1]}'
@@ -35,20 +37,23 @@ def downpatch(func_cancel):
             tmp_print(f'删除子目录: {local_dir}')
         # 如果原来有zip文件, 则删除
         if os.path.exists(local_path):
-            os.remove(local_path)
+            remove_who(local_path)
             tmp_print(f'删除zip文件: {local_path}')
         # 下载zip文件 (裁剪出本地路径 'D:\\autocase\\patch\\p_ble_net_49011_202310131506.zip')
         tmp_print(f'正在下载zip文件: {need_down_path} 到 {local_path}')
         download_obj(local_path, need_down_path)
+        time.sleep(2)
         # 解压zip文件
         tmp_print(f'正在解压zip文件: {local_path}')
         shutil.unpack_archive(local_path, patch_root)
+        time.sleep(5)
         # 删除zip文件
-        os.remove(local_path)
+        remove_who(local_path)
         tmp_print(f'删除zip文件: {local_path}')
         tmp_print(f'脚本下载完成, 请回到主菜单运行脚本')
 
         return True
     except Exception as e:
         tmp_print(f'x 脚本下载失败, {e}')
+        traceback.print_exc()
         return False

@@ -53,7 +53,7 @@ build_options = {  #
 
     "excludes": [],  # 需要排除的包
     "include_files": [  #
-        # (r'D:\project\python\autouim\ef_app_autotest\temp\minio_upload\tmp_tools.py', 'tmp_tools.py') #
+        (r'D:\project\python\autoin\autoin\demo\handle', 'handle') # 检测进程是否被占用
     ],  # 需要包含的其他文件
     'build_exe': temp_folder,  # 输出到临时文件夹 (此处修改是需要同步修改0000_批量打包box.py中的同名变量)
 }

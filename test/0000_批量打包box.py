@@ -7,6 +7,7 @@ import sys
 import time
 import tempfile
 
+import psutil
 import urllib3
 from minio import Minio
 from minio.error import S3Error
@@ -44,11 +45,11 @@ minio_motherbox_root = 'autocase/android/motherbox/'  # motherbox的根目录 (�
 minio_boxhelper_root = 'autocase/android/boxhelper/'  # boxhelper的根目录 (注意, 要加一个`/`结尾,可能会有重复的前缀目录, 也会被搜索出来)
 
 # 定义要打包的项目路径列表
-project_paths = {  #
-    'motherbox.exe': os.path.join(get_project_rootdir(),'case','motherbox'),  # 母盒
-    'boxhelper.exe': os.path.join(get_project_rootdir(),'case','boxhelper'),  # 母盒辅助器
-}
 
+project_paths = {  #
+    'motherbox.exe': os.path.join(get_project_rootdir(), 'case', 'motherbox'),  # 母盒
+    'boxhelper.exe': os.path.join(get_project_rootdir(), 'case', 'boxhelper'),  # 母盒辅助器
+}
 # 临时文件夹(用于存入打包后的文件) - 注意, 此处修改需要同步修改setup.py中的同名变量
 temp_folder = r'D:\autocase_tmp'
 
@@ -99,6 +100,7 @@ def del_rw(action, name, exc):
         # 先解除占用
         # unoccupied(name)
         # 再删除文件夹
+        time.sleep(2)
         os.remove(name)
     except Exception as error:
         print('文件夹被进程占用, 正在强制删除: ', error)
@@ -127,10 +129,34 @@ def check_adb_install():
         print(f"x 检查ADB安装时出错: {e}")
         return False
 
+def kill_exe(_exe):
+    """
+    关闭指定进程
+    java.exe: sonar.bat进程
+    pgAdmin4.exe: 数据库进程
+    """
+    print(f'正在关闭{_exe}....')
+    for proc in psutil.process_iter(['pid', 'name']):
+        # 检查进程名
+        if proc.info['name'] == _exe:
+            print(f'找到进程{_exe},正在关闭...')
+            # 杀掉进程
+            try:
+                proc.kill()
+            except Exception as error:
+                if 'NoSuchProcess' in str(error): print('该进程已关闭')
+
+    print(f'{_exe}已全部关闭!')
+
 # ---------------------------------------------- 流程 ----------------------------------------------
 def pack():
     if check_adb_install():
         restart_adb()
+
+    # 结束进程
+    print('正在结束进程...')
+    for project_fun, project_path in project_paths.items():
+        kill_exe(project_fun)
 
     # 为每个项目执行打包命令
     for project_fun, project_path in project_paths.items():
@@ -217,8 +243,10 @@ def zip_upload():
     __upload_minio(*need_upload)
     # 删除压缩包
     print(f'正在删除压缩包:{str(motherbox_zip)}, (版本: {motherbox_version})')
+    time.sleep(2)
     os.remove(motherbox_zip)
     print(f'正在删除压缩包:{str(boxhelper_zip)}, (版本: {boxhelper_version})')
+    time.sleep(2)
     os.remove(boxhelper_zip)
 
 """ ----------------------------------------------- pack ----------------------------------------------- """

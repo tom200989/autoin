@@ -58,7 +58,8 @@ def update_box():
                 time.sleep(2)
                 # 删除压缩包
                 tmp_print(f'正在删除压缩包...')
-                os.remove(str(local_zip))
+                time.sleep(2)
+                remove_who(str(local_zip))
                 # 启动母盒辅助器
                 tmp_print(f'正在启动新母盒辅助器...')
                 exe_abs_path = os.path.join(boxhelper_dir, 'build', get_pack_dirname(), 'a00_boxhelper.exe')

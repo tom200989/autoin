@@ -54,6 +54,7 @@ def del_rw(action, name, exc):
     os.chmod(name, stat.S_IWRITE)
     try:
         # 删除文件夹
+        time.sleep(2)
         os.remove(name)
     except Exception as error:
         # traceback.print_exc()
@@ -65,7 +66,7 @@ executables = [Executable(os.path.join(get_project_rootdir(),'case','motherbox',
 # 构建选项
 build_options = {  #
     "packages": [  #
-        'shutil', 'psutil',  # a02_updatebox.py
+        'shutil', 'psutil','traceback',  # a02_updatebox.py
         'subprocess', 'requests', 're',  # b00_checknet.py
         'winapps', 'plumbum',  # b01_checkenvs.py
         'minio', 'platform',  # cminio_tools.py
@@ -74,7 +75,7 @@ build_options = {  #
 
     "excludes": [],  # 需要排除的包
     "include_files": [  #
-        # (r'D:\project\python\autouim\ef_app_autotest\temp\minio_upload\tmp_tools.py', 'tmp_tools.py') #
+        (r'D:\project\python\autoin\autoin\demo\handle', 'handle') # 检测进程是否被占用
     ],  # 需要包含的其他文件
     'build_exe': temp_folder,  # 输出到临时文件夹 (此处修改是需要同步修改0000_批量打包box.py中的同名变量)
 }

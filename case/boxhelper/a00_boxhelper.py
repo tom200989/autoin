@@ -46,7 +46,8 @@ def main():
                 time.sleep(2)
                 # 删除压缩包
                 tmp_print(f'正在删除压缩包...')
-                os.remove(str(local_zip))
+                time.sleep(2)
+                remove_who(str(local_zip))
                 # 启动新的母盒
                 tmp_print(f'正在启动新母盒...')
                 newbox_exe = subprocess.Popen([exe_abs_path], creationflags=subprocess.CREATE_NEW_CONSOLE)

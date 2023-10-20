@@ -44,6 +44,7 @@ def download_obj(local_path, obj_name, progress=None):
         client = Minio(endpoint, access_key=access_key, secret_key=secret_key, http_client=urllib3.PoolManager(timeout=2))
         client.fget_object(bucket_name, obj_name, local_path, progress=Progress())
         tmp_print(f"正在下载 {bucket_name} 到 {local_path}")
+        time.sleep(2)
         return True
     except Exception as err:
         tmp_print(f'下载文件[{obj_name}]失败, {err}')
