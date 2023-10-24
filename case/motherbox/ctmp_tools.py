@@ -107,6 +107,21 @@ target_driver = {  # 当前自动化脚本所需要的驱动
 env_reg = r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
 default_chrome = r'C:\Program Files\Google\Chrome\Application'  # 默认chrome安装目录
 
+def get_env_path():
+    """
+    获取环境变量(此做法能不区分path大小写)
+    """
+    # 获取所有环境变量
+    all_env_vars = os.environ
+    # 将所有键转换为小写，并存储在一个字典中
+    lowercase_env_vars = {k.lower(): v for k, v in all_env_vars.items()}
+    # 获取"path"环境变量（不区分大小写）
+    path_value = lowercase_env_vars.get('path', None)
+    if path_value:
+        return path_value
+    else:
+        return None
+
 def is_dir_exits_above_100mb(folder_path):
     """
     判断文件夹是否存在, 并且文件夹大小是否大于100MB

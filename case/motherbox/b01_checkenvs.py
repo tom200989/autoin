@@ -214,7 +214,7 @@ def check_system_envpath(chrome_install_path=default_chrome):
     """
     if chrome_install_path is None: chrome_install_path = default_chrome
     # 获取当前环境变量
-    system_env_path = os.getenv('path')
+    system_env_path = get_env_path()
     # 切割获取到的环境变量
     path_list = system_env_path.split(';')
     # 需要配置的环境变量路径
