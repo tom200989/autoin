@@ -75,9 +75,9 @@ def find_who_occupt(file_path):
     process = subprocess.Popen(f'handle64.exe {file_path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if stdout:
-        oc_state, oc_exes, oc_tip = filter_info(stdout.decode('gbk'))
+        oc_state, oc_exes, oc_tip = filter_info(stdout.decode('utf-8'))
         return oc_state, oc_exes, oc_tip  # 0,1
     if stderr:
-        return -1, {}, f'查询失败: {stderr.decode("gbk")}'
+        return -1, {}, f'查询失败: {stderr.decode("utf-8")}'
 
 # print(find_who_occupt(local_path)) # 查看文件被谁占用

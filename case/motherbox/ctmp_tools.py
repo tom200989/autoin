@@ -2,6 +2,8 @@ from __future__ import print_function
 import os
 import sys
 import ctypes
+
+import chardet
 if sys.version_info[0] == 3:
     import winreg as winreg
 else:
@@ -729,10 +731,11 @@ def find_who_occupt(file_path):
     process = subprocess.Popen(f'handle64.exe {file_path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if stdout:
-        oc_state, oc_exes, oc_tip = filter_info(stdout.decode('gbk'))
+        oc_state, oc_exes, oc_tip = filter_info(stdout.decode('utf-8'))
         return oc_state, oc_exes, oc_tip  # 0,1
     if stderr:
-        return -1, {}, f'查询失败: {stderr.decode("gbk")}'
+        encoding_type = chardet.detect(stdout)['encoding']
+        return -1, {}, f'查询失败: {stderr.decode(encoding_type)}'
 
 def remove_who(file_path):
     """

@@ -8,6 +8,7 @@ import subprocess
 import sys
 import time
 
+import chardet as chardet
 import psutil
 
 boxhelper_version = 1  # 母盒辅助器版本号
@@ -228,10 +229,11 @@ def find_who_occupt(file_path):
     process = subprocess.Popen(f'handle64.exe {file_path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if stdout:
-        oc_state, oc_exes, oc_tip = filter_info(stdout.decode('gbk'))
+        encoding_type = chardet.detect(stdout)['encoding']
+        oc_state, oc_exes, oc_tip = filter_info(stdout.decode(encoding_type))
         return oc_state, oc_exes, oc_tip  # 0,1
     if stderr:
-        return -1, {}, f'查询失败: {stderr.decode("gbk")}'
+        return -1, {}, f'查询失败: {stderr.decode("utf-8")}'
 
 def remove_who(file_path):
     """
