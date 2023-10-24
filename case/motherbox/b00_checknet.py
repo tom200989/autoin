@@ -209,7 +209,7 @@ def check_all_nets(is_need_adb=True):
     }
     if is_adb:
         # 手机wifi连接
-        state_map['state_phone_wifi'] = [check_phone_wifi(target_wifi), f'tips: 请把本机连接到{target_wifi}!(可能会导致APP无法登录)']
+        state_map['state_phone_wifi'] = [check_phone_wifi(target_wifi), f'tips: 请把手机连接到{target_wifi}!(可能会导致APP无法登录)']
         # 手机版本
         is_phone,phone_v, phone_tip = check_phone()
         state_map['state_phone'] =[is_phone, f'tips: {phone_tip}']  # 手机检测
