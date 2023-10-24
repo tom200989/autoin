@@ -221,6 +221,12 @@ def check_system_envpath(chrome_install_path=default_chrome):
     test_paths = need_env_paths(chrome_install_path)
     # 检查哪些路径不存在
     missing_paths = [test_path for test_path in test_paths if test_path not in path_list]
+    # 单独检测`ANDROID_HOME`和`JAVA_HOME`是否配置
+    if 'ANDROID_HOME' not in os.environ:
+        missing_paths.append('%ANDROID_HOME%')
+    if 'JAVA_HOME' not in os.environ:
+        missing_paths.append('%JAVA_HOME%')
+
     # 如果路径没有缺失
     if len(missing_paths) == 0:
         # 检查路径位置
@@ -237,6 +243,8 @@ def check_system_envpath(chrome_install_path=default_chrome):
         for miss_path in missing_paths:
             tmp_print(f'x {miss_path}')
         return False, f'压测编译环境变量不全，缺少：{", ".join(missing_paths)}'
+
+print(check_system_envpath())
 
 # ---------------------------------------------- 检测全部环境 ----------------------------------------------
 def check_all_sys():
