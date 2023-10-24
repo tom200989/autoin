@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import sys
 import ctypes
+from tkinter import messagebox
 
 import chardet
 if sys.version_info[0] == 3:

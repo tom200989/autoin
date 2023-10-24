@@ -66,7 +66,7 @@ executables = [Executable(os.path.join(get_project_rootdir(),'case','motherbox',
 # 构建选项
 build_options = {  #
     "packages": [  #
-        'shutil', 'psutil','traceback',  # a02_updatebox.py
+        'shutil', 'psutil','traceback','concurrent', 'tkinter', # a02_updatebox.py
         'subprocess', 'requests', 're',  # b00_checknet.py
         'winapps', 'plumbum',  # b01_checkenvs.py
         'minio', 'platform',  # cminio_tools.py

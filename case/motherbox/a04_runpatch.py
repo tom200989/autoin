@@ -9,6 +9,15 @@ def do_exe(pathc_dir):
     :param pathc_dir: 如 D:\autocase\patch\p_ap_match
     """
     try:
+        # 检查是否有run.exe在运行, 如果在跑, 提示关闭
+        if 'run.exe' in os.popen('tasklist').read():
+            messagebox.showwarning("警告", "当前已有run.exe正在运行\n请先关闭")  # 弹出警告框
+            return
+
+        if 'runui.exe' in os.popen('tasklist').read():
+            messagebox.showwarning("警告", "当前已有runui.exe正在运行\n请先关闭")
+            return
+
         # 查看指定目录下是否有apk文件 且 只有一个apk文件 且 apk文件名是ecoflow_oversea.apk
         files = os.listdir(pathc_dir)  # 获取指定目录下的所有文件
         apk_files = [f for f in files if f.endswith(".apk")]  # 使用列表解析找出所有以".apk"结尾的文件
