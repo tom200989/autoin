@@ -37,7 +37,7 @@ PYTHON_CMD = "python"
 REG_PATH = 'Software\Classes\ms-settings\shell\open\command'
 DELEGATE_EXEC_REG_KEY = 'DelegateExecute'
 
-test_mode = True  # 是否为测试模式(默认为测试模式, 不重启)
+test_mode = False  # 是否为测试模式(默认为测试模式, 不重启)
 
 motherbox_version = 1000  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
@@ -488,6 +488,7 @@ def restore_envs():
         tmp_print(get_cur_envs())
 
         if not test_mode:  # 非测试模式 - 重启
+            input('环境变量还原完成, 请按任意键重启...')
             tmp_print('环境变量还原完毕, 5秒后重启电脑...(请勿操作)')
             time.sleep(3)
             os.system('shutdown -r -t 0')

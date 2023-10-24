@@ -64,7 +64,7 @@ def main():
     else:
         tmp_print(f'未找到{motherbox_exe_p}所在目录!')
         kill_exe(motherbox_exe_p)
-        input('请勿手动删除母盒!(按任意键重启)')
+        input('请勿手动删除母盒!(按任意键重启母盒)')
         time.sleep(1)
         main()
 

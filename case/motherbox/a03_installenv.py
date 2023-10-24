@@ -723,6 +723,7 @@ def _add_sys_envs():
     if not is_add_env: return False
     # 重启电脑
     if not test_mode:
+        input('环境变量配置完成, 请按任意键重启...')
         tmp_print('环境变量配置完毕, 5秒后重启电脑...(请勿操作)')
         time.sleep(3)
         os.system('shutdown -r -t 0')
