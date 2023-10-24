@@ -457,9 +457,14 @@ def add_need_envs():
         tmp_print(f'正在配置所需的环境变量...')
         # 打开注册表，获取环境变量
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, env_reg, 0, winreg.KEY_READ | winreg.KEY_WRITE) as key:
+            # 添加SDK根路径
+            winreg.SetValueEx(key, 'ANDROID_HOME', 0, winreg.REG_EXPAND_SZ, sdk_dir)
+            # 添加JDK根路径
+            winreg.SetValueEx(key, 'JAVA_HOME', 0, winreg.REG_EXPAND_SZ, jdk_dir)
+
             original_path = winreg.QueryValueEx(key, 'Path')[0]
             # 把新路径添加到原始路径前面
-            new_path = ';'.join(test_paths) + ';' + original_path
+            new_path = ';'.join(test_paths)+';%ANDROID_HOME%;%JAVA_HOME%' + ';' + original_path
             # # 更新环境变量
             winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, new_path)
             winreg.CloseKey(key)
