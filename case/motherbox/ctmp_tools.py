@@ -222,7 +222,7 @@ def tmp_print(*args):
     pre_align = "{:<{width}}".format(pre_tag, width=width)
     if types == 1:  # 打印进度 <tmpg>
         print(f"\r{pre_align}\t--> {times} ===> {content}", end='')
-        time.sleep(0.01)  # 加阻塞延迟的目的是为了让控制台不要刷新那么快以至于什么都看不到
+        time.sleep(0.001)  # 加阻塞延迟的目的是为了让控制台不要刷新那么快以至于什么都看不到
     elif types == 2:  # 强制换行 <enter>
         print(f"\n{pre_align}\t--> {times} ===> {content}")
         out(content)

@@ -111,6 +111,9 @@ class Progress(Thread):
         :param prefix:  打印前缀
         """
         formatted_str = prefix + format_string(current_size, total_length, displayed_time)
+        # 如果  formatted_str 的字符中不包含 5% 10% ... 等5的倍数的百分比, 则不打印
+        if not any([f'{i}%' in formatted_str for i in range(5, 100, 5)]):
+            return
         # self.stdout.write(_REFRESH_CHAR + formatted_str + ' ' * max(self.last_printed_len - len(formatted_str), 0)) # toat: 修改点3: 替换系统打印
         # self.stdout.flush() # toat: 修改点3: 替换系统打印(替换成下方的tmp_print)
 
@@ -168,7 +171,7 @@ def tmp_print(*args):
     pre_align = "{:<{width}}".format(pre_tag, width=width)
     if types == 1:  # 打印进度 <tmpg>
         print(f"\r{pre_align}\t--> {times} ===> {content}", end='')
-        time.sleep(0.05)  # 加阻塞延迟的目的是为了让控制台不要刷新那么快以至于什么都看不到
+        time.sleep(0.001)  # 加阻塞延迟的目的是为了让控制台不要刷新那么快以至于什么都看不到
     elif types == 2:  # 强制换行 <enter>
         print(f"\n{pre_align}\t--> {times} ===> {content}")
     else:

@@ -1,3 +1,5 @@
+import time
+
 from b00_checknet import *
 from b01_checkenvs import *
 
@@ -730,14 +732,19 @@ def _add_sys_envs():
 def install_envs():
     # 安装chrome
     if not _install_chrome(): return
+    time.sleep(5)
     # 安装SDK/JDK/GRADLE
     if not _install_sdk_jdk_gradle(): return
+    time.sleep(5)
     # 安装nodejs
     if not _install_nodejs(): return
+    time.sleep(5)
     # 安装appium
     if not _install_appium(): return
+    time.sleep(5)
     # 安装驱动
     if not _install_driver(): return
+    time.sleep(5)
     # 配置系统环境变量
     if not _add_sys_envs(): return
     tmp_print('=' * 30, '>>> 安装操作全部执行完毕', '=' * 30)
