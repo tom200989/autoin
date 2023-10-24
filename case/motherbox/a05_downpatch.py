@@ -24,6 +24,9 @@ def downpatch(func_cancel):
         # 进入面板选择
         choice_patch = ['选择要下载的脚本', '请选择:', patch_list]
         patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
+        if patch_seleted is None:
+            tmp_print('patch_seleted 为None: 默认为 0')
+            patch_seleted = '0'
         tmp_print(f'当前选中: {patch_seleted} -> {patch_list[int(str(patch_seleted))]}')
         # 根据选择的key, 得到minio的路径 'autocase/android/patch/p_ble_net_49011_202310131506.zip'
         need_down_path = patch_dicts[patch_list[int(str(patch_seleted))][1]]

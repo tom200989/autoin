@@ -19,6 +19,9 @@ def main():
         # 这里添加我们需要管理员权限的代码
         tmp_print('[+] 当前是正以管理员权限运行!')
         box_seleted = choice_pancel(choice_box[0], choice_box[1], choice_box[2], fun_cancel=main)
+        if box_seleted is None:
+            tmp_print('box_seleted为None: 默认为 0')
+            box_seleted = '0'
         if str(box_seleted) == '0':  # 运行脚本
             select_patch(back_func(main))
         elif str(box_seleted) == '1':  # 调试工具

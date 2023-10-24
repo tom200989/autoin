@@ -12,6 +12,9 @@ def select_patch(func_cancel):
     """
     # 脚本选择面板
     patch_seleted = choice_pancel(choice_patch[0], choice_patch[1], choice_patch[2], fun_cancel=func_cancel)
+    if patch_seleted is None:
+        tmp_print('patch_seleted: 默认为 0')
+        patch_seleted = '0'
     if str(patch_seleted) == '0':
         # 返回上一级
         run_patch(back_func(select_patch, func_cancel))  # 运行脚本
@@ -26,6 +29,9 @@ def select_debug(fun_cancel):
     """
     # 脚本选择面板
     debug_selected = choice_pancel(choice_debug[0], choice_debug[1], choice_debug[2], fun_cancel=fun_cancel)
+    if debug_selected is None:
+        tmp_print('debug_selected 为None: 默认为 0')
+        debug_selected = '0'
     if str(debug_selected) == '0':  # 检查网络
         check_all_nets()
     elif str(debug_selected) == '1':  # 检查环境
