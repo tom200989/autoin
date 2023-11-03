@@ -53,6 +53,8 @@ driver_dir = root_dir + '/driver'  # driver目录
 sys_env_dir = root_dir + '/sys_env'  # 系统环境变量缓存目录
 sys_env_txt = sys_env_dir + '/sys_env.txt'  # 系统环境变量缓存文件
 patch_root = root_dir + '/patch'  # patch目录(脚本目录)
+tmpxlog_root = root_dir + '/tmpxlog'  # 临时导出的xlog目录
+tmpcut_root = root_dir + '/tmpcut'  # 临时导出的macut目录
 patch_cdir_prefix = 'p_'  # patch目录下的子目录前缀
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
 uninst_dirs = [chromesetup_dir, sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
@@ -464,7 +466,7 @@ def add_need_envs():
 
             original_path = winreg.QueryValueEx(key, 'Path')[0]
             # 把新路径添加到原始路径前面
-            new_path = ';'.join(test_paths)+';%ANDROID_HOME%;%JAVA_HOME%' + ';' + original_path
+            new_path = ';'.join(test_paths) + ';%ANDROID_HOME%;%JAVA_HOME%' + ';' + original_path
             # # 更新环境变量
             winreg.SetValueEx(key, 'Path', 0, winreg.REG_EXPAND_SZ, new_path)
             winreg.CloseKey(key)
@@ -796,3 +798,44 @@ def remove_who(file_path):
         # 依然失败 - 直接抛出异常
         tmp_print(f"删除文件失败, 正在重试: {e}")
         raise Exception(f"删除文件失败: {file_path}")
+
+# 导出xlog到本地
+def adb_pull_wholog(log_type='xlog'):
+    try:
+        # 判断adb是否存在
+        is_exist, info = where_cmd('adb')
+        # 获取当前时间
+        now_time = time.strftime("%Y%m%d%H%M%S", time.localtime())
+
+        # 拼接tmpxlog,tmpcut路径
+        if log_type == 'xlog':
+            save_path = os.path.join(tmpxlog_root, now_time)
+        elif log_type == 'macut':
+            save_path = os.path.join(tmpcut_root, now_time)
+        else:
+            save_path = os.path.join(tmpxlog_root, now_time)
+
+        # 转换路径
+        new_save_path = save_path.replace('/', '\\')
+
+        # 创建目录
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
+        # 导出xlog,macut
+        if log_type == 'xlog':
+            cmd = f'adb pull /sdcard/Android/data/com.ecoflow/cache/com.ecoflow_xlog {new_save_path}'
+        elif log_type == 'macut':
+            cmd = f'adb pull /sdcard/Android/data/com.ecoflow/cache/macut {new_save_path}'
+        else:
+            cmd = f'adb pull /sdcard/Android/data/com.ecoflow/cache/com.ecoflow_xlog {new_save_path}'
+
+        tmp_print(f'导出到目录: {new_save_path}')
+        tmp_print('文件较大, 正在导出, 请勿做任何操作...')
+        adb_shell(cmd, True, os.path.dirname(info))
+        tmp_print(f'导出完成, 自动打开文件夹')
+        os.startfile(new_save_path)
+        return True
+    except Exception as e:
+        tmp_print(f'导出xlog失败: {e}')
+        return False

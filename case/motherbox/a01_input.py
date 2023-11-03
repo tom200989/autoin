@@ -2,8 +2,9 @@ from a02_updatebox import *
 from a03_installenv import *
 from a04_runpatch import *
 from a05_downpatch import *
+from a06_pullxlog import *
 
-choice_patch = ['选择操作类型', '请选择:', [('0', '运行脚本'), ('1', '下载脚本')]]
+choice_patch = ['选择操作类型', '请选择:', [('0', '运行脚本'), ('1', '下载脚本'), ('2', '删除脚本'), ('3', '导出手机日志'), ('4', '导出手机截图')]]
 choice_debug = ['选择调试功能', '请选择:', [('0', '检测网络'), ('1', '检测环境'), ('2', '安装环境'), ('3', '还原系统变量'), ('4', '更新母盒')]]
 
 def select_patch(func_cancel):
@@ -17,10 +18,25 @@ def select_patch(func_cancel):
         patch_seleted = '0'
     if str(patch_seleted) == '0':
         # 返回上一级
-        run_patch(back_func(select_patch, func_cancel))  # 运行脚本
+        print('选择运行脚本')
+        run_patch(back_func(select_patch, func_cancel), 'run')  # 运行脚本
+
     elif str(patch_seleted) == '1':
+        print('选择下载脚本')
         downpatch(back_func(select_patch, func_cancel))  # 下载脚本
-        print('下载脚本')
+
+    elif str(patch_seleted) == '2':
+        print('选择删除脚本')
+        run_patch(back_func(select_patch, func_cancel), 'del')  # 删除脚本
+
+    elif str(patch_seleted) == '3':  # 导出手机日志
+        print('选择导出手机日志')
+        pull_wholog('xlog')
+        pass
+
+    elif str(patch_seleted) == '4':  # 导出手机截图
+        print('选择导出手机截图')
+        pull_wholog('macut')
 
 def select_debug(fun_cancel):
     """

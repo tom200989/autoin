@@ -63,15 +63,38 @@ def do_exe(pathc_dir):
         if is_adb_install: restart_adb()
         return False
 
-def run_patch(func_cancel):
+def do_del(pathc_dir):
+    try:
+        # 检查是否有run.exe在运行, 如果在跑, 提示关闭
+        if 'run.exe' in os.popen('tasklist').read():
+            messagebox.showwarning("警告", "当前已有run.exe正在运行\n请先关闭")  # 弹出警告框
+            return False
+
+        if 'runui.exe' in os.popen('tasklist').read():
+            messagebox.showwarning("警告", "当前已有runui.exe正在运行\n请先关闭")
+            return False
+
+        # 删除脚本目录
+        if os.path.exists(pathc_dir):
+            shutil.rmtree(pathc_dir)
+            tmp_print(f'删除脚本目录: {pathc_dir}')
+            return True
+
+
+    except Exception as e:
+        tmp_print(f'x 脚本删除失败, {e}')
+        return False
+
+def run_patch(func_cancel, run_or_del='run'):
     """
     运行脚本
     :param func_cancel:  当前面板下点击取消的回调函数
+    :param run_or_del:  运行或者删除('run','del')
     """
     try:
         # 检查是否有脚本目录以及该目录下是否有脚本目录
         if not os.path.exists(patch_root):
-            tmp_print('x 此前没有下载过任何, 请先回到菜单下载脚本')
+            tmp_print('x 此前没有下载过任何脚本, 请先回到菜单下载脚本')
             # 创建脚本目录(不提示,直接创建)
             os.makedirs(patch_root)
             return False
@@ -101,20 +124,29 @@ def run_patch(func_cancel):
         # 地址存在, 则执行脚本
         if os.path.exists(local_path):
 
-            # 检查网络
-            is_network_pass = check_all_nets()
-            # 检查环境
-            is_sys_pass = check_all_sys()
-            # 如果网络或者环境变量不通过, 则不执行
-            if not is_network_pass:
-                tmp_print('x 网络检查不通过, 请检查网络')
-                return False
-            if not is_sys_pass:
-                tmp_print('x 环境检查不通过, 请检查环境')
-                return False
+            # 如果是运行脚本 - 则走运行脚本逻辑
+            if run_or_del == 'run':
+                print('选择运行脚本')
+                # 检查网络
+                is_network_pass = check_all_nets()
+                # 检查环境
+                is_sys_pass = check_all_sys()
+                # 如果网络或者环境变量不通过, 则不执行
+                if not is_network_pass:
+                    tmp_print('x 网络检查不通过, 请检查网络')
+                    return False
+                if not is_sys_pass:
+                    tmp_print('x 环境检查不通过, 请检查环境')
+                    return False
 
-            # 正式调起脚本
-            return do_exe(local_path)
+                # 正式调起脚本
+                return do_exe(local_path)
+
+            else:
+                print('选择删除脚本')
+                # 如果是删除脚本 - 则走删除脚本逻辑
+                return do_del(local_path)
+
         else:
             tmp_print(f'x 脚本目录不存在: {local_path}')
             # 创建脚本目录(不提示,直接创建)

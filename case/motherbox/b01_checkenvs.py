@@ -244,8 +244,6 @@ def check_system_envpath(chrome_install_path=default_chrome):
             tmp_print(f'x {miss_path}')
         return False, f'压测编译环境变量不全，缺少：{", ".join(missing_paths)}'
 
-print(check_system_envpath())
-
 # ---------------------------------------------- 检测全部环境 ----------------------------------------------
 def check_all_sys():
     """

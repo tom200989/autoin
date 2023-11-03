@@ -1,5 +1,4 @@
 import traceback
-
 from b00_checknet import *
 
 def downpatch(func_cancel):
