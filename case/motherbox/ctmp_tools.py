@@ -752,7 +752,7 @@ def find_who_occupt(file_path):
     else:
         os.chdir(r'D:\project\python\autoin\autoin\demo\handle')  # 切换到handle.exe所在目录
     # 启动进程占用查询
-    process = subprocess.Popen(f'handle64.exe /accepteula {file_path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(f'handle.exe /accepteula {file_path}', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     if stdout:
         oc_state, oc_exes, oc_tip = filter_info(stdout.decode('utf-8'))
