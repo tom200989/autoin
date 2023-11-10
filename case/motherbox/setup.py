@@ -3,7 +3,7 @@ import platform
 import shutil
 import stat
 import sys
-
+import time
 
 def get_project_rootdir():
     """

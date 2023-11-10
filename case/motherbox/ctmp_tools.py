@@ -40,7 +40,7 @@ DELEGATE_EXEC_REG_KEY = 'DelegateExecute'
 
 test_mode = False  # 是否为测试模式(默认为测试模式, 不重启)
 
-motherbox_version = 1000  # 当前母盒版本号
+motherbox_version = 1003  # 当前母盒版本号
 root_dir = 'D:/autocase'  # 本地根目录
 case_log_dir = root_dir + '/case_log'  # 运行日志目录
 boxhelper_dir = root_dir + '/boxhelper'  # 母盒辅助器目录
@@ -57,6 +57,7 @@ tmpxlog_root = root_dir + '/tmpxlog'  # 临时导出的xlog目录
 tmpcut_root = root_dir + '/tmpcut'  # 临时导出的macut目录
 patch_cdir_prefix = 'p_'  # patch目录下的子目录前缀
 boxhelper_exe_p = 'a00_boxhelper.exe'  # 母盒辅助器的exe文件名
+nodejs_install_dir = 'C:/Program Files/nodejs'  # nodejs的安装目录
 uninst_dirs = [chromesetup_dir, sdk_dir, jdk_dir, gradle_dir, nodejs_dir, driver_dir, sys_env_dir]  # 一键删除时需清空的目录
 adb_exe = os.path.join(sdk_dir, 'platform-tools', 'adb.exe')  # adb.exe文件名
 

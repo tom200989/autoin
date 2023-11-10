@@ -90,6 +90,9 @@ def check_gradle():
 
 def check_nodejs():
     try:
+        # 先切换文件夹到nodejs安装目录下
+        os.chdir(nodejs_install_dir)
+
         # 查询Node.js版本
         node_v = subprocess.getoutput('node --version')
         if '不是内部或外部命令' in node_v:  # 说明没有安装
@@ -140,6 +143,10 @@ def check_appium():
         # 使用 npm list -g --depth=0 查询appium字样是否存在(存在则表明安装了appium)
         # C:\Users\huilin.xu\AppData\Roaming\npm
         # `-- appium@1.22.3
+
+        # 先切换文件夹到nodejs安装目录下
+        os.chdir(nodejs_install_dir)
+
         tmp_print('正在查询npm列表...')
         appium_infos = subprocess.getoutput('npm list -g --depth=0')
         if 'appium@' not in appium_infos:

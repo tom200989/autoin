@@ -56,10 +56,10 @@ def __checkdown_chromedriver():
             tmp_print('正在删除旧的chromedriver...')
             if os.path.exists(str(driver_path)):
                 time.sleep(2)
-                remove_who(str(driver_path))# 删除旧的chromedriver.exe
+                remove_who(str(driver_path))  # 删除旧的chromedriver.exe
             if os.path.exists(str(driver_zippath)):
                 time.sleep(2)
-                remove_who(str(driver_zippath))# 删除旧的chromedriver.zip
+                remove_who(str(driver_zippath))  # 删除旧的chromedriver.zip
             # 下载chromedriver
             tmp_print('正在下载chromedriver...')
             download_obj(driver_zippath, chromedriver_path)
@@ -780,4 +780,3 @@ def uninstall_envs():
     _uninst_sdk_jdk_gradle_result = _uninstall_sdk_jdk_gradle()
 
     tmp_print('=' * 30, '>>> 卸载操作全部执行完毕', '=' * 30)
-
